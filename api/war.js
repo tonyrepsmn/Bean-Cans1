@@ -26,22 +26,22 @@ module.exports = async (req, res) => {
     const current = new Map(members.items.map(m => [m.tag.toUpperCase(), m.name]));
     // Only current members appear; anyone who left drops off automatically.
     const players = [...current].filter(([t]) => !EXCLUDE.includes(t)).map(([tag, name]) => {
-      const scores = [];
+      const scores = []; // ACTUAL fame per war, exactly as RoyaleAPI shows it
       let fame10 = 0, decks10 = 0;
-      wars.forEach((w, i) => {
+      wars.forEach(w => {
         const st = w.standings.find(s => s.clan.tag.toUpperCase() === TAG);
         const p = st && st.clan.participants.find(x => x.tag.toUpperCase() === tag);
         if (p && p.decksUsed > 0) {
-          scores.push(Math.round((p.fame / p.decksUsed) * DECKS_PER_WAR));
+          scores.push(p.fame);
           fame10 += p.fame; decks10 += p.decksUsed;
         } else scores.push(null);
       });
       const last5 = scores.slice(0, 5).filter(v => v != null);
       return {
         name, tag, wars: scores, decks: decks10,
-        avg10: decks10 ? Math.round(fame10 / decks10) : null,                 // avg score per deck
-        score10: decks10 ? Math.round((fame10 / decks10) * DECKS_PER_WAR) : null, // total fame / total decks x 16
-        score5: last5.length ? Math.round(last5.reduce((a, b) => a + b, 0) / last5.length) : null // avg of last 5 war scores
+        avg10: decks10 ? Math.round(fame10 / decks10) : null,                      // avg score per deck
+        score10: decks10 ? Math.round((fame10 / decks10) * DECKS_PER_WAR) : null,  // total fame / total decks x 16
+        score5: last5.length ? Math.round(last5.reduce((a, b) => a + b, 0) / last5.length) : null // plain avg of last 5 actual war scores
       };
     });
     rank(players, 'score10'); rank(players, 'score5');
