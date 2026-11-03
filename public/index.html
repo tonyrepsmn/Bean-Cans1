@@ -5,71 +5,88 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Bean Cans · War Stats</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=Figtree:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#eef1f7;--ink:#1b2236;--mute:#667089;--card:#fff;--line:#dde2ee;--accent:#2f4bdb;
---g:#bfe3c4;--y:#f6e3a1;--r:#f0b3b0;--gt:#1d5a2b;--yt:#6b5300;--rt:#8a1f1a}
+:root{--bg:#0c0f33;--panel:#161a4a;--panel2:#1d2260;--line:#2c3380;--ink:#f3f4ff;--mute:#9aa3e6;--gold:#ffc83d;--pink:#ff4fb8;--blue:#4c8dff;
+--g:#2fae58;--y:#f5b800;--r:#e2453f}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.4 Figtree,system-ui,sans-serif}
-header{padding:32px 20px 8px;max-width:1200px;margin:auto}
-h1{font:800 clamp(32px,6vw,56px)/1 'Bricolage Grotesque',sans-serif;margin:0 0 6px;letter-spacing:-.02em}
-.sub{color:var(--mute);margin:0 0 18px}
-.bar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+body{margin:0;color:var(--ink);font:700 15px/1.4 Nunito,system-ui,sans-serif;min-height:100vh;
+background:
+radial-gradient(900px 500px at 15% -10%,rgba(255,79,184,.28),transparent 60%),
+radial-gradient(900px 600px at 90% 0%,rgba(76,141,255,.30),transparent 60%),
+repeating-conic-gradient(#10144a 0 25%,#0c0f33 0 50%) 0 0/72px 72px;background-attachment:fixed}
+header{max-width:1240px;margin:auto;padding:34px 20px 10px;text-align:center}
+.crown{width:64px;height:64px;filter:drop-shadow(0 4px 0 #a06b00)}
+h1{font:400 clamp(38px,7vw,68px)/1 'Lilita One',sans-serif;margin:4px 0 6px;color:var(--gold);
+text-shadow:0 4px 0 #a06b00,0 8px 18px rgba(0,0,0,.5);letter-spacing:.01em}
+.sub{color:var(--mute);margin:0 0 22px}
+.podium{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;max-width:760px;margin:0 auto 22px;align-items:end}
+.pod{background:linear-gradient(180deg,var(--panel2),var(--panel));border:2px solid var(--line);border-radius:16px;padding:12px 8px;box-shadow:0 6px 0 rgba(0,0,0,.35)}
+.pod .m{font-size:28px}.pod .n{font:400 18px 'Lilita One';overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pod .v{font:400 26px 'Lilita One';color:var(--gold)}.pod small{color:var(--mute);display:block}
+.pod.p1{order:2;padding-top:20px;border-color:var(--gold)}.pod.p2{order:1}.pod.p3{order:3}
+.bar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;max-width:1240px;margin:0 auto;padding:0 20px}
 .legend{display:flex;gap:8px;flex-wrap:wrap}
-.chip{padding:4px 10px;border-radius:99px;font-weight:600;font-size:13px}
-.chip.g{background:var(--g);color:var(--gt)}.chip.y{background:var(--y);color:var(--yt)}.chip.r{background:var(--r);color:var(--rt)}
-input{font:inherit;padding:9px 14px;border:1px solid var(--line);border-radius:10px;min-width:220px;background:#fff}
-input:focus-visible,th:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-main{max-width:1200px;margin:12px auto 48px;padding:0 20px}
-.wrap{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:14px}
-table{border-collapse:separate;border-spacing:0;width:100%;min-width:900px}
+.chip{padding:5px 12px;border-radius:99px;font-weight:800;font-size:13px;color:#fff}
+.chip.g{background:var(--g)}.chip.y{background:var(--y);color:#3b2d00}.chip.r{background:var(--r)}
+input{font:inherit;padding:10px 16px;border:2px solid var(--line);border-radius:12px;min-width:230px;background:var(--panel);color:var(--ink)}
+input::placeholder{color:var(--mute)}
+input:focus-visible,th:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+main{max-width:1240px;margin:14px auto 48px;padding:0 20px}
+.wrap{overflow-x:auto;background:var(--panel);border:2px solid var(--line);border-radius:16px;box-shadow:0 8px 0 rgba(0,0,0,.35)}
+table{border-collapse:separate;border-spacing:0;width:100%;min-width:1100px}
 th,td{padding:8px 10px;text-align:center;white-space:nowrap;border-bottom:1px solid var(--line)}
-th{position:sticky;top:0;background:#f7f8fc;font-weight:600;font-size:13px;color:var(--mute);cursor:pointer;user-select:none}
-th.sorted{color:var(--accent)}
-th small{display:block;font-weight:400}
-td:nth-child(2),th:nth-child(2){text-align:left;position:sticky;left:0;background:inherit;z-index:1;font-weight:600}
-tbody tr{background:#fff}tbody tr:nth-child(even){background:#fafbfe}
-td.rk{color:var(--mute);width:44px}
-td.top1{color:#b8860b;font-weight:800}
-.s{font-variant-numeric:tabular-nums;font-weight:600}
-.s.g{background:var(--g);color:var(--gt)}.s.y{background:var(--y);color:var(--yt)}.s.r{background:var(--r);color:var(--rt)}
-.w{font-size:13px;color:var(--mute)}
+th{position:sticky;top:0;background:#222873;font:400 13px/1.2 'Lilita One',sans-serif;letter-spacing:.02em;color:#cfd5ff;cursor:pointer;user-select:none;white-space:normal;min-width:84px}
+th.sorted{color:var(--gold)}
+th small{display:block;font:700 11px Nunito;color:var(--mute)}
+th:first-child,td:first-child{text-align:left;position:sticky;left:0;z-index:2;min-width:150px;background:#1a1f5a;font-weight:800}
+th:first-child{background:#222873;z-index:3}
+tbody tr:hover td:first-child{background:#262d7c}
+.s{font-variant-numeric:tabular-nums;font-weight:800}
+.s.g{background:var(--g);color:#fff}.s.y{background:var(--y);color:#3b2d00}.s.r{background:var(--r);color:#fff}
+.k{background:#233a8f;color:#cfe0ff}
+.w{color:var(--mute)}
 .msg{padding:40px;text-align:center;color:var(--mute)}
-footer{color:var(--mute);font-size:13px;margin-top:12px}
-@media(max-width:600px){td,th{padding:7px 8px}}
+footer{color:var(--mute);font-size:13px;margin-top:14px;text-align:center}
+@media(max-width:600px){.pod .n{font-size:15px}.pod .v{font-size:20px}}
+@media(prefers-reduced-motion:no-preference){.crown{animation:bob 3s ease-in-out infinite}@keyframes bob{50%{transform:translateY(-6px)}}}
 </style>
 </head>
 <body>
 <header>
-  <h1 id="title">War stats</h1>
+  <svg class="crown" viewBox="0 0 64 64" aria-hidden="true"><path d="M6 20l14 12 12-20 12 20 14-12-6 32H12z" fill="#ffc83d" stroke="#a06b00" stroke-width="3" stroke-linejoin="round"/><circle cx="6" cy="20" r="4" fill="#ff4fb8"/><circle cx="58" cy="20" r="4" fill="#ff4fb8"/><circle cx="32" cy="12" r="4" fill="#4c8dff"/></svg>
+  <h1 id="title">Bean Cans</h1>
   <p class="sub" id="sub">Loading…</p>
-  <div class="bar">
-    <div class="legend"><span class="chip g">2800+</span><span class="chip y">2500–2799</span><span class="chip r">Under 2500</span></div>
-    <input id="q" type="search" placeholder="Search player" aria-label="Search player">
-  </div>
+  <div class="podium" id="podium"></div>
 </header>
+<div class="bar">
+  <div class="legend"><span class="chip g">2800+</span><span class="chip y">2500–2799</span><span class="chip r">Under 2500</span></div>
+  <input id="q" type="search" placeholder="Search player" aria-label="Search player">
+</div>
 <main>
-  <div class="wrap"><table><thead id="head"></thead><tbody id="body"><tr><td class="msg">Loading…</td></tr></tbody></table></div>
-  <footer>Score is average fame per deck played × 16, so skipped decks don't hurt a player's rating. War 1 is the most recent war.</footer>
+  <div class="wrap"><table><thead id="head"></thead><tbody id="body"><tr><td class="msg" colspan="17">Loading…</td></tr></tbody></table></div>
+  <footer>War 1 is the most recent war. Scores = average fame per deck × 16, so skipped decks don't count against a player.</footer>
 </main>
 <script>
 const cls=v=>v==null?'':v>=2800?'g':v>=2500?'y':'r';
 const fmt=v=>v==null?'':v.toLocaleString();
-let data,sortKey='score10',dir=-1;
-const cols=[['rank_score10','#'],['name','Player'],['score10','10-war score'],['score5','5-war score'],['rank_score5','Last 5 rank'],['decks','Decks played']];
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let data,sortKey='rank_score5',dir=1;
+const cols=[['name','player_name'],['avg10','Average Score Per Deck (Last 10 Wars)'],['score10','Average War Score (Using AVG Per Deck) (Last 10 Wars)'],['score5','Average Score (Last 5 Wars)'],['rank_score10','Clan Rank (avg score per deck played)'],['rank_score5','Clan Rank (Last 5 actual)'],['decks','Total Decks Played (Last 10)']];
+const val=(p,k)=>/^w\d+$/.test(k)?p.wars[+k.slice(1)-1]:p[k];
 function render(){
   const q=document.getElementById('q').value.toLowerCase();
-  const get=(p,k)=>k.startsWith('w')&&k.length<=3&&!isNaN(k.slice(1))?p.wars[+k.slice(1)-1]:p[k];
   const rows=data.players.filter(p=>p.name.toLowerCase().includes(q)).sort((a,b)=>{
-    const x=get(a,sortKey),y=get(b,sortKey);
-    if(typeof x==='string'||typeof y==='string')return dir*String(x).localeCompare(String(y));
-    return dir*((x??-1)-(y??-1));});
+    const x=val(a,sortKey),y=val(b,sortKey);
+    if(sortKey==='name')return dir*x.localeCompare(y);
+    if(x==null)return 1;if(y==null)return -1;return dir*(x-y);});
+  const d=s=>new Date(s.replace(/(\d{4})(\d{2})(\d{2}).*/,'$1-$2-$3')+'T12:00').toLocaleDateString(undefined,{month:'short',day:'numeric'});
   document.getElementById('head').innerHTML='<tr>'+cols.map(([k,l])=>`<th tabindex="0" data-k="${k}" class="${k===sortKey?'sorted':''}">${l}</th>`).join('')+
-    data.warDates.map((d,i)=>`<th tabindex="0" data-k="w${i+1}" class="${sortKey==='w'+(i+1)?'sorted':''}">War ${i+1}<small>${new Date(d.replace(/(\d{4})(\d{2})(\d{2}).*/,'$1-$2-$3')+'T12:00').toLocaleDateString(undefined,{month:'short',day:'numeric'})}</small></th>`).join('')+'</tr>';
-  document.getElementById('body').innerHTML=rows.map(p=>`<tr><td class="rk ${p.rank_score10===1?'top1':''}">${p.rank_score10}</td><td>${p.name.replace(/</g,'&lt;')}</td>
-    <td class="s ${cls(p.score10)}">${fmt(p.score10)}</td><td class="s ${cls(p.score5)}">${fmt(p.score5)}</td>
-    <td class="w">${p.rank_score5}</td><td class="w">${p.decks}</td>`+
-    p.wars.map(v=>`<td class="s ${cls(v)}">${fmt(v)}</td>`).join('')+'</tr>').join('')||'<tr><td class="msg">No players match.</td></tr>';
+    data.warDates.map((x,i)=>`<th tabindex="0" data-k="w${i+1}" class="${sortKey==='w'+(i+1)?'sorted':''}">War ${i+1}<small>${d(x)}</small></th>`).join('')+'</tr>';
+  document.getElementById('body').innerHTML=rows.map(p=>`<tr><td>${esc(p.name)}</td>
+    <td>${fmt(p.avg10)}</td><td class="s ${cls(p.score10)}">${fmt(p.score10)}</td><td class="s ${cls(p.score5)}">${fmt(p.score5)}</td>
+    <td class="k">${p.rank_score10??''}</td><td class="k">${p.rank_score5??''}</td><td class="w">${p.decks}</td>`+
+    p.wars.map(v=>`<td class="s ${cls(v)}">${fmt(v)}</td>`).join('')+'</tr>').join('')||'<tr><td class="msg" colspan="17">No players match.</td></tr>';
 }
 document.getElementById('head').addEventListener('click',e=>{
   const th=e.target.closest('th');if(!th)return;const k=th.dataset.k;
@@ -81,8 +98,10 @@ fetch('/api/war').then(r=>r.json()).then(d=>{
   data=d;document.title=d.clan.name+' · War Stats';
   document.getElementById('title').textContent=d.clan.name;
   document.getElementById('sub').textContent=`${d.players.length} members · last 10 wars · updated ${new Date(d.updated).toLocaleString()}`;
+  const top=[...d.players].filter(p=>p.score5!=null).sort((a,b)=>b.score5-a.score5).slice(0,3);
+  document.getElementById('podium').innerHTML=top.map((p,i)=>`<div class="pod p${i+1}"><div class="m">${['🥇','🥈','🥉'][i]}</div><div class="n">${esc(p.name)}</div><div class="v">${p.score5}</div><small>last 5 wars</small></div>`).join('');
   render();
-}).catch(e=>{document.getElementById('sub').textContent='';document.getElementById('body').innerHTML=`<tr><td class="msg">Couldn't load war data. ${e.message}</td></tr>`;});
+}).catch(e=>{document.getElementById('sub').textContent='';document.getElementById('body').innerHTML=`<tr><td class="msg" colspan="17">Couldn't load war data. ${esc(e.message)}</td></tr>`;});
 </script>
 </body>
 </html>
