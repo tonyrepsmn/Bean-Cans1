@@ -103,7 +103,7 @@ footer{color:var(--mute);font-size:13px;margin-top:12px;text-align:center}
 const cls=v=>v==null?'':v>=2800?'g':v>=2500?'y':'r';
 const fmt=v=>v==null?'':v.toLocaleString();
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-let data,sortKey='rank_score5',dir=1;
+let data,sortKey='rank_score10',dir=1;
 const cols=[
  ['name','player_name','Player'],
  ['avg10','Average Score Per Deck (Last 10 Wars)','Avg/Deck'],
@@ -137,8 +137,8 @@ fetch('/api/war').then(r=>r.json()).then(d=>{
   data=d;document.title=d.clan.name+' · War Stats';
   document.getElementById('title').textContent=d.clan.name;
   document.getElementById('sub').textContent=`${d.players.length} members · last 10 wars · updated ${new Date(d.updated).toLocaleString()}`;
-  const top=[...d.players].filter(p=>p.score5!=null).sort((a,b)=>b.score5-a.score5).slice(0,3);
-  document.getElementById('podium').innerHTML=top.map((p,i)=>`<div class="pod p${i+1}"><div class="m">${['🥇','🥈','🥉'][i]}</div><div class="n">${esc(p.name)}</div><div class="v">${p.score5}</div><small>last 5 wars</small></div>`).join('');
+  const top=[...d.players].filter(p=>p.score10!=null).sort((a,b)=>b.score10-a.score10).slice(0,3);
+  document.getElementById('podium').innerHTML=top.map((p,i)=>`<div class="pod p${i+1}"><div class="m">${['🥇','🥈','🥉'][i]}</div><div class="n">${esc(p.name)}</div><div class="v">${p.score10}</div><small>last 10 wars</small></div>`).join('');
   render();
 }).catch(e=>{document.getElementById('sub').textContent='';document.getElementById('body').innerHTML=`<tr><td class="msg" colspan="17">Couldn't load war data. ${esc(e.message)}</td></tr>`;});
 </script>
