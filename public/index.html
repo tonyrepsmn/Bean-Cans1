@@ -15,47 +15,79 @@ background:
 radial-gradient(900px 500px at 15% -10%,rgba(255,79,184,.28),transparent 60%),
 radial-gradient(900px 600px at 90% 0%,rgba(76,141,255,.30),transparent 60%),
 repeating-conic-gradient(#10144a 0 25%,#0c0f33 0 50%) 0 0/72px 72px;background-attachment:fixed}
-header{max-width:1240px;margin:auto;padding:34px 20px 10px;text-align:center}
-.crown{width:64px;height:64px;filter:drop-shadow(0 4px 0 #a06b00)}
-h1{font:400 clamp(38px,7vw,68px)/1 'Lilita One',sans-serif;margin:4px 0 6px;color:var(--gold);
+header{max-width:1240px;margin:auto;padding:26px 20px 8px;text-align:center}
+.crown{width:52px;height:52px;filter:drop-shadow(0 4px 0 #a06b00)}
+.titlerow{display:flex;align-items:center;justify-content:center;gap:clamp(8px,3vw,28px)}
+.can{width:clamp(34px,6vw,60px);height:clamp(45px,8vw,80px);filter:drop-shadow(0 4px 0 rgba(0,0,0,.4))}
+.c1{transform:rotate(-14deg)}.c2{transform:rotate(14deg) scaleX(-1)}
+h1{font:400 clamp(34px,7vw,64px)/1 'Lilita One',sans-serif;margin:2px 0 4px;color:var(--gold);
 text-shadow:0 4px 0 #a06b00,0 8px 18px rgba(0,0,0,.5);letter-spacing:.01em}
-.sub{color:var(--mute);margin:0 0 22px}
-.podium{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;max-width:760px;margin:0 auto 22px;align-items:end}
-.pod{background:linear-gradient(180deg,var(--panel2),var(--panel));border:2px solid var(--line);border-radius:16px;padding:12px 8px;box-shadow:0 6px 0 rgba(0,0,0,.35)}
-.pod .m{font-size:28px}.pod .n{font:400 18px 'Lilita One';overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sub{color:var(--mute);margin:0 0 16px}
+.podium{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;max-width:760px;margin:0 auto 16px;align-items:end}
+.pod{background:linear-gradient(180deg,var(--panel2),var(--panel));border:2px solid var(--line);border-radius:16px;padding:10px 8px;box-shadow:0 6px 0 rgba(0,0,0,.35)}
+.pod .m{font-size:26px}.pod .n{font:400 18px 'Lilita One';overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pod .v{font:400 26px 'Lilita One';color:var(--gold)}.pod small{color:var(--mute);display:block}
-.pod.p1{order:2;padding-top:20px;border-color:var(--gold)}.pod.p2{order:1}.pod.p3{order:3}
+.pod.p1{order:2;padding-top:16px;border-color:var(--gold)}.pod.p2{order:1}.pod.p3{order:3}
 .bar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;max-width:1240px;margin:0 auto;padding:0 20px}
 .legend{display:flex;gap:8px;flex-wrap:wrap}
 .chip{padding:5px 12px;border-radius:99px;font-weight:800;font-size:13px;color:#fff}
 .chip.g{background:var(--g)}.chip.y{background:var(--y);color:#3b2d00}.chip.r{background:var(--r)}
-input{font:inherit;padding:10px 16px;border:2px solid var(--line);border-radius:12px;min-width:230px;background:var(--panel);color:var(--ink)}
+input{font:inherit;padding:9px 16px;border:2px solid var(--line);border-radius:12px;min-width:220px;background:var(--panel);color:var(--ink)}
 input::placeholder{color:var(--mute)}
 input:focus-visible,th:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
-main{max-width:1240px;margin:14px auto 48px;padding:0 20px}
-.wrap{overflow-x:auto;background:var(--panel);border:2px solid var(--line);border-radius:16px;box-shadow:0 8px 0 rgba(0,0,0,.35)}
-table{border-collapse:separate;border-spacing:0;width:100%;min-width:1100px}
-th,td{padding:8px 10px;text-align:center;white-space:nowrap;border-bottom:1px solid var(--line)}
-th{position:sticky;top:0;background:#222873;font:400 13px/1.2 'Lilita One',sans-serif;letter-spacing:.02em;color:#cfd5ff;cursor:pointer;user-select:none;white-space:normal;min-width:84px}
+main{max-width:1240px;margin:12px auto 36px;padding:0 20px}
+.wrap{background:var(--panel);border:2px solid var(--line);border-radius:16px;box-shadow:0 8px 0 rgba(0,0,0,.35);overflow:hidden}
+table{border-collapse:collapse;width:100%;table-layout:fixed}
+th,td{padding:6px 2px;text-align:center;border-bottom:1px solid var(--line);overflow:hidden}
+td{font-size:14px;white-space:nowrap}
+th{background:#222873;font:400 11px/1.2 'Lilita One',sans-serif;letter-spacing:.01em;color:#cfd5ff;cursor:pointer;user-select:none;vertical-align:middle}
 th.sorted{color:var(--gold)}
-th small{display:block;font:700 11px Nunito;color:var(--mute)}
-th:first-child,td:first-child{text-align:left;position:sticky;left:0;z-index:2;min-width:150px;background:#1a1f5a;font-weight:800}
-th:first-child{background:#222873;z-index:3}
+th small{display:block;font:700 10px Nunito;color:var(--mute)}
+th:nth-child(1){width:14%}
+th:nth-child(n+2):nth-child(-n+7){width:7.5%}
+th:first-child,td:first-child{text-align:left;padding-left:10px;background:#1a1f5a;font-weight:800;text-overflow:ellipsis;white-space:nowrap}
+th:first-child{background:#222873}
 tbody tr:hover td:first-child{background:#262d7c}
 .s{font-variant-numeric:tabular-nums;font-weight:800}
 .s.g{background:var(--g);color:#fff}.s.y{background:var(--y);color:#3b2d00}.s.r{background:var(--r);color:#fff}
 .k{background:#233a8f;color:#cfe0ff}
 .w{color:var(--mute)}
-.msg{padding:40px;text-align:center;color:var(--mute)}
-footer{color:var(--mute);font-size:13px;margin-top:14px;text-align:center}
-@media(max-width:600px){.pod .n{font-size:15px}.pod .v{font-size:20px}}
+.msg{padding:40px;text-align:center;color:var(--mute);white-space:normal}
+.short{display:none}
+footer{color:var(--mute);font-size:13px;margin-top:12px;text-align:center}
+@media(max-width:760px){
+  header{padding-top:16px}
+  .crown{width:36px;height:36px}
+  .pod .n{font-size:14px}.pod .v{font-size:20px}.pod .m{font-size:20px}
+  .full,th small{display:none}.short{display:inline}
+  th:nth-child(2),td:nth-child(2),th:nth-child(5),td:nth-child(5),th:nth-child(7),td:nth-child(7){display:none}
+  th:nth-child(1){width:21%}
+  th:nth-child(3),th:nth-child(4),th:nth-child(6){width:9%}
+  th{font-size:9px}td{font-size:10.5px}
+  th:first-child,td:first-child{padding-left:5px;font-size:11px}
+  main,.bar{padding:0 8px}
+}
 @media(prefers-reduced-motion:no-preference){.crown{animation:bob 3s ease-in-out infinite}@keyframes bob{50%{transform:translateY(-6px)}}}
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="can" viewBox="0 0 60 80">
+  <ellipse cx="30" cy="70" rx="22" ry="7" fill="#aab4f5" stroke="#6f7bd6" stroke-width="3"/>
+  <rect x="8" y="10" width="44" height="60" fill="#cfd6ff" stroke="#6f7bd6" stroke-width="3"/>
+  <rect x="9.5" y="26" width="41" height="30" fill="#e2453f"/>
+  <ellipse cx="30" cy="41" rx="12" ry="7.5" fill="#8b4a1f" transform="rotate(-25 30 41)"/>
+  <path d="M23 45 Q30 40 37 36" stroke="#d9a066" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <ellipse cx="30" cy="10" rx="22" ry="7" fill="#e9edff" stroke="#6f7bd6" stroke-width="3"/>
+  <ellipse cx="30" cy="10" rx="12" ry="3" fill="none" stroke="#aab4f5" stroke-width="2"/>
+</symbol></defs></svg>
 <header>
   <svg class="crown" viewBox="0 0 64 64" aria-hidden="true"><path d="M6 20l14 12 12-20 12 20 14-12-6 32H12z" fill="#ffc83d" stroke="#a06b00" stroke-width="3" stroke-linejoin="round"/><circle cx="6" cy="20" r="4" fill="#ff4fb8"/><circle cx="58" cy="20" r="4" fill="#ff4fb8"/><circle cx="32" cy="12" r="4" fill="#4c8dff"/></svg>
-  <h1 id="title">Bean Cans</h1>
+  <div class="titlerow">
+    <svg class="can c1" aria-hidden="true"><use href="#can"/></svg>
+    <h1 id="title">Bean Cans</h1>
+    <svg class="can c2" aria-hidden="true"><use href="#can"/></svg>
+  </div>
   <p class="sub" id="sub">Loading…</p>
   <div class="podium" id="podium"></div>
 </header>
@@ -72,7 +104,14 @@ const cls=v=>v==null?'':v>=2800?'g':v>=2500?'y':'r';
 const fmt=v=>v==null?'':v.toLocaleString();
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 let data,sortKey='rank_score5',dir=1;
-const cols=[['name','player_name'],['avg10','Average Score Per Deck (Last 10 Wars)'],['score10','Average War Score (Using AVG Per Deck) (Last 10 Wars)'],['score5','Average Score (Last 5 Wars)'],['rank_score10','Clan Rank (avg score per deck played)'],['rank_score5','Clan Rank (Last 5 actual)'],['decks','Total Decks Played (Last 10)']];
+const cols=[
+ ['name','player_name','Player'],
+ ['avg10','Average Score Per Deck (Last 10 Wars)','Avg/Deck'],
+ ['score10','Average War Score (Using AVG Per Deck) (Last 10 Wars)','10-War Avg'],
+ ['score5','Average Score (Last 5 Wars)','5-War Avg'],
+ ['rank_score10','Clan Rank (avg score per deck played)','Rank 10'],
+ ['rank_score5','Clan Rank (Last 5 actual)','Rank 5'],
+ ['decks','Total Decks Played (Last 10)','Decks']];
 const val=(p,k)=>/^w\d+$/.test(k)?p.wars[+k.slice(1)-1]:p[k];
 function render(){
   const q=document.getElementById('q').value.toLowerCase();
@@ -81,9 +120,9 @@ function render(){
     if(sortKey==='name')return dir*x.localeCompare(y);
     if(x==null)return 1;if(y==null)return -1;return dir*(x-y);});
   const d=s=>new Date(s.replace(/(\d{4})(\d{2})(\d{2}).*/,'$1-$2-$3')+'T12:00').toLocaleDateString(undefined,{month:'short',day:'numeric'});
-  document.getElementById('head').innerHTML='<tr>'+cols.map(([k,l])=>`<th tabindex="0" data-k="${k}" class="${k===sortKey?'sorted':''}">${l}</th>`).join('')+
+  document.getElementById('head').innerHTML='<tr>'+cols.map(([k,l,s])=>`<th tabindex="0" data-k="${k}" class="${k===sortKey?'sorted':''}"><span class="full">${l}</span><span class="short">${s}</span></th>`).join('')+
     data.warDates.map((x,i)=>`<th tabindex="0" data-k="w${i+1}" class="${sortKey==='w'+(i+1)?'sorted':''}">War ${i+1}<small>${d(x)}</small></th>`).join('')+'</tr>';
-  document.getElementById('body').innerHTML=rows.map(p=>`<tr><td>${esc(p.name)}</td>
+  document.getElementById('body').innerHTML=rows.map(p=>`<tr><td title="${esc(p.name)}">${esc(p.name)}</td>
     <td>${fmt(p.avg10)}</td><td class="s ${cls(p.score10)}">${fmt(p.score10)}</td><td class="s ${cls(p.score5)}">${fmt(p.score5)}</td>
     <td class="k">${p.rank_score10??''}</td><td class="k">${p.rank_score5??''}</td><td class="w">${p.decks}</td>`+
     p.wars.map(v=>`<td class="s ${cls(v)}">${fmt(v)}</td>`).join('')+'</tr>').join('')||'<tr><td class="msg" colspan="17">No players match.</td></tr>';
