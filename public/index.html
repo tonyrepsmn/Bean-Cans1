@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bean Cans · War Stats</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=Figtree:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#eef1f7;--ink:#1b2236;--mute:#667089;--card:#fff;--line:#dde2ee;--accent:#2f4bdb;
+--g:#bfe3c4;--y:#f6e3a1;--r:#f0b3b0;--gt:#1d5a2b;--yt:#6b5300;--rt:#8a1f1a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.4 Figtree,system-ui,sans-serif}
+header{padding:32px 20px 8px;max-width:1200px;margin:auto}
+h1{font:800 clamp(32px,6vw,56px)/1 'Bricolage Grotesque',sans-serif;margin:0 0 6px;letter-spacing:-.02em}
+.sub{color:var(--mute);margin:0 0 18px}
+.bar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+.legend{display:flex;gap:8px;flex-wrap:wrap}
+.chip{padding:4px 10px;border-radius:99px;font-weight:600;font-size:13px}
+.chip.g{background:var(--g);color:var(--gt)}.chip.y{background:var(--y);color:var(--yt)}.chip.r{background:var(--r);color:var(--rt)}
+input{font:inherit;padding:9px 14px;border:1px solid var(--line);border-radius:10px;min-width:220px;background:#fff}
+input:focus-visible,th:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+main{max-width:1200px;margin:12px auto 48px;padding:0 20px}
+.wrap{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:14px}
+table{border-collapse:separate;border-spacing:0;width:100%;min-width:900px}
+th,td{padding:8px 10px;text-align:center;white-space:nowrap;border-bottom:1px solid var(--line)}
+th{position:sticky;top:0;background:#f7f8fc;font-weight:600;font-size:13px;color:var(--mute);cursor:pointer;user-select:none}
+th.sorted{color:var(--accent)}
+th small{display:block;font-weight:400}
+td:nth-child(2),th:nth-child(2){text-align:left;position:sticky;left:0;background:inherit;z-index:1;font-weight:600}
+tbody tr{background:#fff}tbody tr:nth-child(even){background:#fafbfe}
+td.rk{color:var(--mute);width:44px}
+td.top1{color:#b8860b;font-weight:800}
+.s{font-variant-numeric:tabular-nums;font-weight:600}
+.s.g{background:var(--g);color:var(--gt)}.s.y{background:var(--y);color:var(--yt)}.s.r{background:var(--r);color:var(--rt)}
+.w{font-size:13px;color:var(--mute)}
+.msg{padding:40px;text-align:center;color:var(--mute)}
+footer{color:var(--mute);font-size:13px;margin-top:12px}
+@media(max-width:600px){td,th{padding:7px 8px}}
+</style>
+</head>
+<body>
+<header>
+  <h1 id="title">War stats</h1>
+  <p class="sub" id="sub">Loading…</p>
+  <div class="bar">
+    <div class="legend"><span class="chip g">2800+</span><span class="chip y">2500–2799</span><span class="chip r">Under 2500</span></div>
+    <input id="q" type="search" placeholder="Search player" aria-label="Search player">
+  </div>
+</header>
+<main>
+  <div class="wrap"><table><thead id="head"></thead><tbody id="body"><tr><td class="msg">Loading…</td></tr></tbody></table></div>
+  <footer>Score is average fame per deck played × 16, so skipped decks don't hurt a player's rating. War 1 is the most recent war.</footer>
+</main>
+<script>
+const cls=v=>v==null?'':v>=2800?'g':v>=2500?'y':'r';
+const fmt=v=>v==null?'':v.toLocaleString();
+let data,sortKey='score10',dir=-1;
+const cols=[['rank_score10','#'],['name','Player'],['score10','10-war score'],['score5','5-war score'],['rank_score5','Last 5 rank'],['decks','Decks played']];
+function render(){
+  const q=document.getElementById('q').value.toLowerCase();
+  const get=(p,k)=>k.startsWith('w')&&k.length<=3&&!isNaN(k.slice(1))?p.wars[+k.slice(1)-1]:p[k];
+  const rows=data.players.filter(p=>p.name.toLowerCase().includes(q)).sort((a,b)=>{
+    const x=get(a,sortKey),y=get(b,sortKey);
+    if(typeof x==='string'||typeof y==='string')return dir*String(x).localeCompare(String(y));
+    return dir*((x??-1)-(y??-1));});
+  document.getElementById('head').innerHTML='<tr>'+cols.map(([k,l])=>`<th tabindex="0" data-k="${k}" class="${k===sortKey?'sorted':''}">${l}</th>`).join('')+
+    data.warDates.map((d,i)=>`<th tabindex="0" data-k="w${i+1}" class="${sortKey==='w'+(i+1)?'sorted':''}">War ${i+1}<small>${new Date(d.replace(/(\d{4})(\d{2})(\d{2}).*/,'$1-$2-$3')+'T12:00').toLocaleDateString(undefined,{month:'short',day:'numeric'})}</small></th>`).join('')+'</tr>';
+  document.getElementById('body').innerHTML=rows.map(p=>`<tr><td class="rk ${p.rank_score10===1?'top1':''}">${p.rank_score10}</td><td>${p.name.replace(/</g,'&lt;')}</td>
+    <td class="s ${cls(p.score10)}">${fmt(p.score10)}</td><td class="s ${cls(p.score5)}">${fmt(p.score5)}</td>
+    <td class="w">${p.rank_score5}</td><td class="w">${p.decks}</td>`+
+    p.wars.map(v=>`<td class="s ${cls(v)}">${fmt(v)}</td>`).join('')+'</tr>').join('')||'<tr><td class="msg">No players match.</td></tr>';
+}
+document.getElementById('head').addEventListener('click',e=>{
+  const th=e.target.closest('th');if(!th)return;const k=th.dataset.k;
+  dir=k===sortKey?-dir:(k==='name'||k.startsWith('rank')?1:-1);sortKey=k;render();});
+document.getElementById('head').addEventListener('keydown',e=>{if(e.key==='Enter')e.target.click();});
+document.getElementById('q').addEventListener('input',render);
+fetch('/api/war').then(r=>r.json()).then(d=>{
+  if(d.error)throw new Error(d.error);
+  data=d;document.title=d.clan.name+' · War Stats';
+  document.getElementById('title').textContent=d.clan.name;
+  document.getElementById('sub').textContent=`${d.players.length} members · last 10 wars · updated ${new Date(d.updated).toLocaleString()}`;
+  render();
+}).catch(e=>{document.getElementById('sub').textContent='';document.getElementById('body').innerHTML=`<tr><td class="msg">Couldn't load war data. ${e.message}</td></tr>`;});
+</script>
+</body>
+</html>
