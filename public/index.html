@@ -63,13 +63,6 @@ tbody tr:hover td:first-child{background:#262d7c}
 .msg{padding:40px;text-align:center;color:var(--mute);white-space:normal}
 .short{display:none}
 footer{color:var(--mute);font-size:13px;margin-top:12px;text-align:center}
-#decksView{max-width:1240px;margin:0 auto 40px;padding:0 20px}
-.pills{display:flex;gap:8px;overflow-x:auto;justify-content:center;padding:2px 0 8px}
-.pill{font:400 14px 'Lilita One',sans-serif;padding:6px 16px;border-radius:99px;border:2px solid var(--line);background:var(--panel);color:var(--mute);cursor:pointer;white-space:nowrap}
-.pill.on{background:var(--blue);color:#fff;border-color:#2b5fc4}
-.setinfo{text-align:center;color:var(--mute);margin:4px 0 12px;font-size:14px}
-.ok{display:inline-block;margin-left:8px;padding:2px 10px;border-radius:99px;font-size:12px;background:var(--g);color:#fff}
-.ok.bad{background:var(--r)}
 .dg{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
 .deck{background:var(--panel);border:2px solid var(--line);border-radius:14px;padding:10px;box-shadow:0 5px 0 rgba(0,0,0,.35)}
 .dh{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;font:400 15px 'Lilita One',sans-serif}
@@ -105,7 +98,7 @@ details.mem .dg{padding:0 12px 12px}
   th:first-child{z-index:3}
   main,.bar{padding:0 10px}
   input{width:100%}
-  #decksView,#membersView{padding:0 10px}.dg{gap:8px}.deck{padding:8px}
+  #membersView{padding:0 10px}.dg{gap:8px}.deck{padding:8px}
 }
 @media(prefers-reduced-motion:no-preference){.crown{animation:bob 3s ease-in-out infinite}@keyframes bob{50%{transform:translateY(-6px)}}}
 </style>
@@ -129,7 +122,7 @@ details.mem .dg{padding:0 12px 12px}
     <svg class="can c2" aria-hidden="true"><use href="#can"/></svg>
   </div>
   <p class="sub" id="sub">Loading…</p>
-  <div class="tabs"><button class="tab on" data-v="stats">Player stats</button><button class="tab" data-v="decks">War decks</button><button class="tab" data-v="members">Member decks</button></div>
+  <div class="tabs"><button class="tab on" data-v="stats">Player stats</button><button class="tab" data-v="members">Member decks</button></div>
   <div id="statsHead"><div class="podium" id="podium"></div></div>
 </header>
 <div id="statsBody">
@@ -143,12 +136,6 @@ details.mem .dg{padding:0 12px 12px}
   <footer>War 1 is the most recent war. Scores = average fame per deck × 16, so skipped decks don't count against a player. Tap a name to open their RoyaleAPI profile.</footer>
 </main>
 </div>
-<section id="decksView" hidden>
-  <div class="pills" id="pills"></div>
-  <div class="setinfo" id="setinfo"></div>
-  <div class="dg" id="dg"></div>
-  <footer id="dfoot"></footer>
-</section>
 <section id="membersView" hidden>
   <div class="mbar"><input id="mq" type="search" placeholder="Search member" aria-label="Search member"></div>
   <div id="mlist"></div>
@@ -190,16 +177,15 @@ $('head').addEventListener('click',e=>{
 $('head').addEventListener('keydown',e=>{if(e.key==='Enter')e.target.click();});
 $('q').addEventListener('input',render);
 
-/* ---------- War decks + Member decks ---------- */
-const norm=x=>x.toLowerCase().replace(/[^a-z0-9]/g,'');
-let cards,cardsP,deckData,curSet=0,membersData;
+/* ---------- Member decks ---------- */
+let cards,cardsP,membersData;
 const ensureCards=()=>cardsP||(cardsP=fetch('/api/cards').then(r=>r.json()).then(c=>{if(c.error)throw new Error(c.error);cards=c;return c;}).catch(e=>{cardsP=null;throw e;}));
 function show(v){
   $('statsHead').hidden=$('statsBody').hidden=v!=='stats';
-  $('decksView').hidden=v!=='decks';$('membersView').hidden=v!=='members';
+  $('membersView').hidden=v!=='members';
   document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
   history.replaceState(null,'','#'+v);
-  if(v==='decks')loadDecks();if(v==='members')loadMembers();
+  if(v==='members')loadMembers();
 }
 document.querySelector('.tabs').onclick=e=>{const b=e.target.closest('.tab');if(b)show(b.dataset.v);};
 const deckLink=(ids,slots)=>'https://link.clashroyale.com/deck/en?deck='+ids.join(';')+(slots&&slots.some(Boolean)?'&slots='+slots.join(';'):'');
@@ -212,32 +198,6 @@ function deckHtml(d,n){
     return `<img src="${esc(src)}" alt="${esc(c.n)}" title="${esc(c.n)}" loading="lazy">`;}).join('');
   return `<div class="deck"><div class="dh">Deck ${'ABCD'[n]||n+1}<span>${avg} elixir</span></div><div class="cg">${imgs}</div><a class="cp" href="${esc(deckLink(d.ids,d.slots))}" target="_blank" rel="noopener">Copy to game</a></div>`;
 }
-async function loadDecks(){
-  if(deckData)return;
-  try{
-    await ensureCards();
-    deckData=await fetch('/decks.json').then(r=>r.json());renderDecks();
-  }catch(e){deckData=null;$('dg').innerHTML=`<div class="msg" style="grid-column:1/-1">Couldn't load war decks. ${esc(e.message)}</div>`;}
-}
-function parseDeck(str){
-  const bySlug={};for(const id in cards)bySlug[norm(cards[id].n)]=+id;
-  let ids,slots=null;
-  const m=str.match(/deck=([\d;]+)/),sl=str.match(/slots=([\d;]+)/);
-  if(m){ids=m[1].split(';').map(Number);if(sl)slots=sl[1].split(';').map(Number);}
-  else ids=str.split('?')[0].split('/').pop().split(',').map(k=>bySlug[norm(k)]).filter(Boolean);
-  return {ids,slots};
-}
-function renderDecks(){
-  const sets=deckData.sets;if(curSet>=sets.length)curSet=0;
-  $('pills').innerHTML=sets.map((s,i)=>`<button class="pill ${i===curSet?'on':''}" data-i="${i}">${esc(s.name)}</button>`).join('');
-  const set=sets[curSet],decks=set.decks.map(parseDeck);
-  const count={};decks.forEach(d=>d.ids.forEach(id=>count[id]=(count[id]||0)+1));
-  const dupes=Object.keys(count).filter(id=>count[id]>1).map(id=>cards[id]?cards[id].n:id);
-  $('setinfo').innerHTML=esc(set.tag||'')+(dupes.length?`<span class="ok bad">Repeats: ${esc(dupes.join(', '))}</span>`:'<span class="ok">No repeated cards</span>');
-  $('dg').innerHTML=decks.map(deckHtml).join('');
-  $('dfoot').textContent='Updated: '+(deckData.updated||'')+'. Tap Copy to game to load a deck in Clash Royale. Each set uses 32 different cards, so all four decks work together in war.';
-}
-$('pills').onclick=e=>{const b=e.target.closest('.pill');if(!b)return;curSet=+b.dataset.i;renderDecks();};
 async function loadMembers(){
   if(membersData)return;
   $('mlist').innerHTML='<div class="msg">Loading member decks… the first load can take a few seconds.</div>';
@@ -265,11 +225,4 @@ fetch('/api/war').then(r=>r.json()).then(d=>{
   data=d;document.title=d.clan.name+' · War Stats';
   $('title').textContent=d.clan.name;
   $('sub').textContent=`${d.players.length} members · last 10 wars · updated ${new Date(d.updated).toLocaleString()}`;
-  const top=[...d.players].filter(p=>p.score10!=null).sort((a,b)=>b.score10-a.score10).slice(0,3);
-  $('podium').innerHTML=top.map((p,i)=>`<div class="pod p${i+1}"><div class="m">${['🥇','🥈','🥉'][i]}</div><div class="n">${link(p)}</div><div class="v">${p.score10}</div><small>last 10 wars</small></div>`).join('');
-  render();
-}).catch(e=>{$('sub').textContent='';$('body').innerHTML=`<tr><td class="msg" colspan="17">Couldn't load war data. ${esc(e.message)}</td></tr>`;});
-{const h=location.hash.slice(1);if(h==='decks'||h==='members')show(h);}
-</script>
-</body>
-</html>
+  const
