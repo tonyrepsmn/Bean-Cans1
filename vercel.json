@@ -1,4 +1,1 @@
-{
-  "outputDirectory": "public",
-  "functions": { "api/memberdecks.js": { "maxDuration": 30 } }
-}
+{ "outputDirectory": "public" }
