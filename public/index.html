@@ -78,6 +78,15 @@ footer{color:var(--mute);font-size:13px;margin-top:12px;text-align:center}
 .cg img{width:100%;aspect-ratio:302/363;object-fit:contain;display:block}
 .cp{display:block;text-align:center;padding:8px;border-radius:10px;background:var(--gold);color:#3b2d00;font:400 14px 'Lilita One',sans-serif;text-decoration:none;box-shadow:0 3px 0 #a06b00}
 .cp:active{transform:translateY(2px);box-shadow:0 1px 0 #a06b00}
+#membersView{max-width:1240px;margin:0 auto 40px;padding:0 20px}
+.mbar{display:flex;justify-content:center;margin-bottom:12px}
+details.mem{background:var(--panel);border:2px solid var(--line);border-radius:14px;margin-bottom:8px}
+details.mem[open]{border-color:var(--blue)}
+details.mem summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;font:400 17px 'Lilita One',sans-serif}
+details.mem summary::-webkit-details-marker{display:none}
+.cnt{font:700 12px Nunito;padding:3px 10px;border-radius:99px;background:var(--panel2);color:var(--mute);white-space:nowrap}
+.cnt.ok4{background:var(--g);color:#fff}
+details.mem .dg{padding:0 12px 12px}
 @media(max-width:900px){.dg{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:760px){
   header{padding-top:16px}
@@ -96,7 +105,7 @@ footer{color:var(--mute);font-size:13px;margin-top:12px;text-align:center}
   th:first-child{z-index:3}
   main,.bar{padding:0 10px}
   input{width:100%}
-  #decksView{padding:0 10px}.dg{gap:8px}.deck{padding:8px}
+  #decksView,#membersView{padding:0 10px}.dg{gap:8px}.deck{padding:8px}
 }
 @media(prefers-reduced-motion:no-preference){.crown{animation:bob 3s ease-in-out infinite}@keyframes bob{50%{transform:translateY(-6px)}}}
 </style>
@@ -120,7 +129,7 @@ footer{color:var(--mute);font-size:13px;margin-top:12px;text-align:center}
     <svg class="can c2" aria-hidden="true"><use href="#can"/></svg>
   </div>
   <p class="sub" id="sub">Loading…</p>
-  <div class="tabs"><button class="tab on" id="tabStats">Player stats</button><button class="tab" id="tabDecks">War decks</button></div>
+  <div class="tabs"><button class="tab on" data-v="stats">Player stats</button><button class="tab" data-v="decks">War decks</button><button class="tab" data-v="members">Member decks</button></div>
   <div id="statsHead"><div class="podium" id="podium"></div></div>
 </header>
 <div id="statsBody">
@@ -139,6 +148,11 @@ footer{color:var(--mute);font-size:13px;margin-top:12px;text-align:center}
   <div class="setinfo" id="setinfo"></div>
   <div class="dg" id="dg"></div>
   <footer id="dfoot"></footer>
+</section>
+<section id="membersView" hidden>
+  <div class="mbar"><input id="mq" type="search" placeholder="Search member" aria-label="Search member"></div>
+  <div id="mlist"></div>
+  <footer id="mfoot">Built from each member's recent war battles. If someone played a lot of other battles since war, they may show fewer than 4 decks until they play war again.</footer>
 </section>
 <script>
 const $=id=>document.getElementById(id);
@@ -176,30 +190,42 @@ $('head').addEventListener('click',e=>{
 $('head').addEventListener('keydown',e=>{if(e.key==='Enter')e.target.click();});
 $('q').addEventListener('input',render);
 
-/* ---------- War decks tab ---------- */
-function show(v){const d=v==='decks';
-  $('statsHead').hidden=d;$('statsBody').hidden=d;$('decksView').hidden=!d;
-  $('tabStats').classList.toggle('on',!d);$('tabDecks').classList.toggle('on',d);
-  history.replaceState(null,'',d?'#decks':'#stats');if(d)loadDecks();}
-$('tabStats').onclick=()=>show('stats');$('tabDecks').onclick=()=>show('decks');
+/* ---------- War decks + Member decks ---------- */
 const norm=x=>x.toLowerCase().replace(/[^a-z0-9]/g,'');
-let cards,deckData,curSet=0,loaded=false;
+let cards,cardsP,deckData,curSet=0,membersData;
+const ensureCards=()=>cardsP||(cardsP=fetch('/api/cards').then(r=>r.json()).then(c=>{if(c.error)throw new Error(c.error);cards=c;return c;}).catch(e=>{cardsP=null;throw e;}));
+function show(v){
+  $('statsHead').hidden=$('statsBody').hidden=v!=='stats';
+  $('decksView').hidden=v!=='decks';$('membersView').hidden=v!=='members';
+  document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
+  history.replaceState(null,'','#'+v);
+  if(v==='decks')loadDecks();if(v==='members')loadMembers();
+}
+document.querySelector('.tabs').onclick=e=>{const b=e.target.closest('.tab');if(b)show(b.dataset.v);};
+const deckLink=(ids,slots)=>'https://link.clashroyale.com/deck/en?deck='+ids.join(';')+(slots&&slots.some(Boolean)?'&slots='+slots.join(';'):'');
+function deckHtml(d,n){
+  const sl=d.slots||[];
+  const known=d.ids.filter(id=>cards[id]&&cards[id].e!=null);
+  const avg=known.length?(known.reduce((a,id)=>a+cards[id].e,0)/8).toFixed(1):'';
+  const imgs=d.ids.map((id,i)=>{const c=cards[id];if(!c)return '<span></span>';
+    const src=sl[i]===1&&c.ev?c.ev:sl[i]===2&&c.h?c.h:c.i;
+    return `<img src="${esc(src)}" alt="${esc(c.n)}" title="${esc(c.n)}" loading="lazy">`;}).join('');
+  return `<div class="deck"><div class="dh">Deck ${'ABCD'[n]||n+1}<span>${avg} elixir</span></div><div class="cg">${imgs}</div><a class="cp" href="${esc(deckLink(d.ids,d.slots))}" target="_blank" rel="noopener">Copy to game</a></div>`;
+}
 async function loadDecks(){
-  if(loaded)return;loaded=true;
+  if(deckData)return;
   try{
-    const [c,dd]=await Promise.all([fetch('/api/cards').then(r=>r.json()),fetch('/decks.json').then(r=>r.json())]);
-    if(c.error)throw new Error(c.error);
-    cards=c;deckData=dd;renderDecks();
-  }catch(e){loaded=false;$('dg').innerHTML=`<div class="msg" style="grid-column:1/-1">Couldn't load war decks. ${esc(e.message)}</div>`;}
+    await ensureCards();
+    deckData=await fetch('/decks.json').then(r=>r.json());renderDecks();
+  }catch(e){deckData=null;$('dg').innerHTML=`<div class="msg" style="grid-column:1/-1">Couldn't load war decks. ${esc(e.message)}</div>`;}
 }
 function parseDeck(str){
   const bySlug={};for(const id in cards)bySlug[norm(cards[id].n)]=+id;
-  let ids,slots=[];
+  let ids,slots=null;
   const m=str.match(/deck=([\d;]+)/),sl=str.match(/slots=([\d;]+)/);
   if(m){ids=m[1].split(';').map(Number);if(sl)slots=sl[1].split(';').map(Number);}
   else ids=str.split('?')[0].split('/').pop().split(',').map(k=>bySlug[norm(k)]).filter(Boolean);
-  const l='https://link.clashroyale.com/deck/en?deck='+ids.join(';')+(slots.length?'&slots='+slots.join(';'):'');
-  return {ids,slots,link:l};
+  return {ids,slots};
 }
 function renderDecks(){
   const sets=deckData.sets;if(curSet>=sets.length)curSet=0;
@@ -208,16 +234,31 @@ function renderDecks(){
   const count={};decks.forEach(d=>d.ids.forEach(id=>count[id]=(count[id]||0)+1));
   const dupes=Object.keys(count).filter(id=>count[id]>1).map(id=>cards[id]?cards[id].n:id);
   $('setinfo').innerHTML=esc(set.tag||'')+(dupes.length?`<span class="ok bad">Repeats: ${esc(dupes.join(', '))}</span>`:'<span class="ok">No repeated cards</span>');
-  $('dg').innerHTML=decks.map((d,n)=>{
-    const known=d.ids.filter(id=>cards[id]&&cards[id].e!=null);
-    const avg=known.length?(known.reduce((a,id)=>a+cards[id].e,0)/8).toFixed(1):'';
-    const imgs=d.ids.map((id,i)=>{const c=cards[id];if(!c)return '<span></span>';
-      const src=d.slots[i]===1&&c.ev?c.ev:d.slots[i]===2&&c.h?c.h:c.i;
-      return `<img src="${esc(src)}" alt="${esc(c.n)}" title="${esc(c.n)}" loading="lazy">`;}).join('');
-    return `<div class="deck"><div class="dh">Deck ${'ABCD'[n]||n+1}<span>${avg} elixir</span></div><div class="cg">${imgs}</div><a class="cp" href="${esc(d.link)}" target="_blank" rel="noopener">Copy to game</a></div>`;}).join('');
+  $('dg').innerHTML=decks.map(deckHtml).join('');
   $('dfoot').textContent='Updated: '+(deckData.updated||'')+'. Tap Copy to game to load a deck in Clash Royale. Each set uses 32 different cards, so all four decks work together in war.';
 }
 $('pills').onclick=e=>{const b=e.target.closest('.pill');if(!b)return;curSet=+b.dataset.i;renderDecks();};
+async function loadMembers(){
+  if(membersData)return;
+  $('mlist').innerHTML='<div class="msg">Loading member decks… the first load can take a few seconds.</div>';
+  try{
+    const [m]=await Promise.all([fetch('/api/memberdecks').then(r=>r.json()),ensureCards()]);
+    if(m.error)throw new Error(m.error);
+    membersData=m;renderMembers();
+  }catch(e){membersData=null;$('mlist').innerHTML=`<div class="msg">Couldn't load member decks. ${esc(e.message)}</div>`;}
+}
+function renderMembers(){
+  const q=$('mq').value.toLowerCase();
+  const list=membersData.players.filter(p=>p.name.toLowerCase().includes(q));
+  $('mlist').innerHTML=list.map(p=>`<details class="mem" data-t="${esc(p.tag)}"><summary><span>${esc(p.name)}</span><span class="cnt ${p.decks.length===4?'ok4':''}">${p.decks.length?p.decks.length+' of 4 decks':'No recent war battles'}</span></summary><div class="dg"></div></details>`).join('')||'<div class="msg">No members match.</div>';
+}
+$('mq').addEventListener('input',()=>{if(membersData)renderMembers();});
+$('mlist').addEventListener('toggle',e=>{
+  const d=e.target;if(!d.open||!d.classList.contains('mem'))return;
+  const box=d.querySelector('.dg');if(box.childElementCount)return;
+  const p=membersData.players.find(x=>x.tag===d.dataset.t);
+  box.innerHTML=p.decks.length?p.decks.map(deckHtml).join(''):'<div class="msg" style="grid-column:1/-1;padding:16px">No war battles in their recent battle log. Their decks show up after they play war.</div>';
+},true);
 
 fetch('/api/war').then(r=>r.json()).then(d=>{
   if(d.error)throw new Error(d.error);
@@ -228,7 +269,7 @@ fetch('/api/war').then(r=>r.json()).then(d=>{
   $('podium').innerHTML=top.map((p,i)=>`<div class="pod p${i+1}"><div class="m">${['🥇','🥈','🥉'][i]}</div><div class="n">${link(p)}</div><div class="v">${p.score10}</div><small>last 10 wars</small></div>`).join('');
   render();
 }).catch(e=>{$('sub').textContent='';$('body').innerHTML=`<tr><td class="msg" colspan="17">Couldn't load war data. ${esc(e.message)}</td></tr>`;});
-if(location.hash==='#decks')show('decks');
+{const h=location.hash.slice(1);if(h==='decks'||h==='members')show(h);}
 </script>
 </body>
 </html>
