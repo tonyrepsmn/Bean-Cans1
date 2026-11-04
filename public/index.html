@@ -10,6 +10,7 @@
 :root{--bg:#0c0f33;--panel:#161a4a;--panel2:#1d2260;--line:#2c3380;--ink:#f3f4ff;--mute:#9aa3e6;--gold:#ffc83d;--pink:#ff4fb8;--blue:#4c8dff;
 --g:#2fae58;--y:#f5b800;--r:#e2453f}
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 body{margin:0;color:var(--ink);font:700 15px/1.4 Nunito,system-ui,sans-serif;min-height:100vh;
 background:
 radial-gradient(900px 500px at 15% -10%,rgba(255,79,184,.28),transparent 60%),
@@ -22,7 +23,10 @@ header{max-width:1240px;margin:auto;padding:26px 20px 8px;text-align:center}
 .c1{transform:rotate(-14deg)}.c2{transform:rotate(14deg) scaleX(-1)}
 h1{font:400 clamp(34px,7vw,64px)/1 'Lilita One',sans-serif;margin:2px 0 4px;color:var(--gold);
 text-shadow:0 4px 0 #a06b00,0 8px 18px rgba(0,0,0,.5);letter-spacing:.01em}
-.sub{color:var(--mute);margin:0 0 16px}
+.sub{color:var(--mute);margin:0 0 14px}
+.tabs{display:flex;justify-content:center;gap:10px;margin:0 0 16px}
+.tab{font:400 17px 'Lilita One',sans-serif;padding:8px 22px;border-radius:12px;border:2px solid var(--line);background:var(--panel);color:var(--mute);cursor:pointer}
+.tab.on{background:var(--gold);color:#3b2d00;border-color:#a06b00}
 .podium{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;max-width:760px;margin:0 auto 16px;align-items:end}
 .pod{background:linear-gradient(180deg,var(--panel2),var(--panel));border:2px solid var(--line);border-radius:16px;padding:10px 8px;box-shadow:0 6px 0 rgba(0,0,0,.35)}
 .pod .m{font-size:26px}.pod .n{font:400 18px 'Lilita One';overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -35,7 +39,7 @@ text-shadow:0 4px 0 #a06b00,0 8px 18px rgba(0,0,0,.5);letter-spacing:.01em}
 .chip.g{background:var(--g)}.chip.y{background:var(--y);color:#3b2d00}.chip.r{background:var(--r)}
 input{font:inherit;padding:9px 16px;border:2px solid var(--line);border-radius:12px;min-width:220px;background:var(--panel);color:var(--ink)}
 input::placeholder{color:var(--mute)}
-input:focus-visible,th:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+input:focus-visible,th:focus-visible,a:focus-visible,button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 main{max-width:1240px;margin:12px auto 36px;padding:0 20px}
 .hint{display:none;margin:0 0 8px;color:var(--mute);font-size:13px;text-align:center}
 .wrap{background:var(--panel);border:2px solid var(--line);border-radius:16px;box-shadow:0 8px 0 rgba(0,0,0,.35);overflow:hidden}
@@ -59,6 +63,22 @@ tbody tr:hover td:first-child{background:#262d7c}
 .msg{padding:40px;text-align:center;color:var(--mute);white-space:normal}
 .short{display:none}
 footer{color:var(--mute);font-size:13px;margin-top:12px;text-align:center}
+#decksView{max-width:1240px;margin:0 auto 40px;padding:0 20px}
+.pills{display:flex;gap:8px;overflow-x:auto;justify-content:center;padding:2px 0 8px}
+.pill{font:400 14px 'Lilita One',sans-serif;padding:6px 16px;border-radius:99px;border:2px solid var(--line);background:var(--panel);color:var(--mute);cursor:pointer;white-space:nowrap}
+.pill.on{background:var(--blue);color:#fff;border-color:#2b5fc4}
+.setinfo{text-align:center;color:var(--mute);margin:4px 0 12px;font-size:14px}
+.ok{display:inline-block;margin-left:8px;padding:2px 10px;border-radius:99px;font-size:12px;background:var(--g);color:#fff}
+.ok.bad{background:var(--r)}
+.dg{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.deck{background:var(--panel);border:2px solid var(--line);border-radius:14px;padding:10px;box-shadow:0 5px 0 rgba(0,0,0,.35)}
+.dh{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;font:400 15px 'Lilita One',sans-serif}
+.dh span{font:700 12px Nunito;color:var(--mute)}
+.cg{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:10px}
+.cg img{width:100%;aspect-ratio:302/363;object-fit:contain;display:block}
+.cp{display:block;text-align:center;padding:8px;border-radius:10px;background:var(--gold);color:#3b2d00;font:400 14px 'Lilita One',sans-serif;text-decoration:none;box-shadow:0 3px 0 #a06b00}
+.cp:active{transform:translateY(2px);box-shadow:0 1px 0 #a06b00}
+@media(max-width:900px){.dg{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:760px){
   header{padding-top:16px}
   .crown{width:36px;height:36px}
@@ -76,6 +96,7 @@ footer{color:var(--mute);font-size:13px;margin-top:12px;text-align:center}
   th:first-child{z-index:3}
   main,.bar{padding:0 10px}
   input{width:100%}
+  #decksView{padding:0 10px}.dg{gap:8px}.deck{padding:8px}
 }
 @media(prefers-reduced-motion:no-preference){.crown{animation:bob 3s ease-in-out infinite}@keyframes bob{50%{transform:translateY(-6px)}}}
 </style>
@@ -99,8 +120,10 @@ footer{color:var(--mute);font-size:13px;margin-top:12px;text-align:center}
     <svg class="can c2" aria-hidden="true"><use href="#can"/></svg>
   </div>
   <p class="sub" id="sub">Loading…</p>
-  <div class="podium" id="podium"></div>
+  <div class="tabs"><button class="tab on" id="tabStats">Player stats</button><button class="tab" id="tabDecks">War decks</button></div>
+  <div id="statsHead"><div class="podium" id="podium"></div></div>
 </header>
+<div id="statsBody">
 <div class="bar">
   <div class="legend"><span class="chip g">2800+</span><span class="chip y">2500–2799</span><span class="chip r">Under 2500</span></div>
   <input id="q" type="search" placeholder="Search player" aria-label="Search player">
@@ -110,7 +133,15 @@ footer{color:var(--mute);font-size:13px;margin-top:12px;text-align:center}
   <div class="wrap"><table><thead id="head"></thead><tbody id="body"><tr><td class="msg" colspan="17">Loading…</td></tr></tbody></table></div>
   <footer>War 1 is the most recent war. Scores = average fame per deck × 16, so skipped decks don't count against a player. Tap a name to open their RoyaleAPI profile.</footer>
 </main>
+</div>
+<section id="decksView" hidden>
+  <div class="pills" id="pills"></div>
+  <div class="setinfo" id="setinfo"></div>
+  <div class="dg" id="dg"></div>
+  <footer id="dfoot"></footer>
+</section>
 <script>
+const $=id=>document.getElementById(id);
 const cls=v=>v==null?'':v>=2800?'g':v>=2500?'y':'r';
 const fmt=v=>v==null?'':v.toLocaleString();
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -126,33 +157,78 @@ const cols=[
  ['decks','Total Decks Played (Last 10)','Decks']];
 const val=(p,k)=>/^w\d+$/.test(k)?p.wars[+k.slice(1)-1]:p[k];
 function render(){
-  const q=document.getElementById('q').value.toLowerCase();
+  const q=$('q').value.toLowerCase();
   const rows=data.players.filter(p=>p.name.toLowerCase().includes(q)).sort((a,b)=>{
     const x=val(a,sortKey),y=val(b,sortKey);
     if(sortKey==='name')return dir*x.localeCompare(y);
     if(x==null)return 1;if(y==null)return -1;return dir*(x-y);});
   const d=s=>new Date(s.replace(/(\d{4})(\d{2})(\d{2}).*/,'$1-$2-$3')+'T12:00').toLocaleDateString(undefined,{month:'short',day:'numeric'});
-  document.getElementById('head').innerHTML='<tr>'+cols.map(([k,l,s])=>`<th tabindex="0" data-k="${k}" class="${k===sortKey?'sorted':''}"><span class="full">${l}</span><span class="short">${s}</span></th>`).join('')+
+  $('head').innerHTML='<tr>'+cols.map(([k,l,s])=>`<th tabindex="0" data-k="${k}" class="${k===sortKey?'sorted':''}"><span class="full">${l}</span><span class="short">${s}</span></th>`).join('')+
     data.warDates.map((x,i)=>`<th tabindex="0" data-k="w${i+1}" class="${sortKey==='w'+(i+1)?'sorted':''}">War ${i+1}<small>${d(x)}</small></th>`).join('')+'</tr>';
-  document.getElementById('body').innerHTML=rows.map(p=>`<tr><td title="${esc(p.name)}">${link(p)}</td>
+  $('body').innerHTML=rows.map(p=>`<tr><td title="${esc(p.name)}">${link(p)}</td>
     <td>${fmt(p.avg10)}</td><td class="s ${cls(p.score10)}">${fmt(p.score10)}</td><td class="s ${cls(p.score5)}">${fmt(p.score5)}</td>
     <td class="k">${p.rank_score10??''}</td><td class="k">${p.rank_score5??''}</td><td class="w">${p.decks}</td>`+
     p.wars.map(v=>`<td class="s ${cls(v)}">${fmt(v)}</td>`).join('')+'</tr>').join('')||'<tr><td class="msg" colspan="17">No players match.</td></tr>';
 }
-document.getElementById('head').addEventListener('click',e=>{
+$('head').addEventListener('click',e=>{
   const th=e.target.closest('th');if(!th)return;const k=th.dataset.k;
   dir=k===sortKey?-dir:(k==='name'||k.startsWith('rank')?1:-1);sortKey=k;render();});
-document.getElementById('head').addEventListener('keydown',e=>{if(e.key==='Enter')e.target.click();});
-document.getElementById('q').addEventListener('input',render);
+$('head').addEventListener('keydown',e=>{if(e.key==='Enter')e.target.click();});
+$('q').addEventListener('input',render);
+
+/* ---------- War decks tab ---------- */
+function show(v){const d=v==='decks';
+  $('statsHead').hidden=d;$('statsBody').hidden=d;$('decksView').hidden=!d;
+  $('tabStats').classList.toggle('on',!d);$('tabDecks').classList.toggle('on',d);
+  history.replaceState(null,'',d?'#decks':'#stats');if(d)loadDecks();}
+$('tabStats').onclick=()=>show('stats');$('tabDecks').onclick=()=>show('decks');
+const norm=x=>x.toLowerCase().replace(/[^a-z0-9]/g,'');
+let cards,deckData,curSet=0,loaded=false;
+async function loadDecks(){
+  if(loaded)return;loaded=true;
+  try{
+    const [c,dd]=await Promise.all([fetch('/api/cards').then(r=>r.json()),fetch('/decks.json').then(r=>r.json())]);
+    if(c.error)throw new Error(c.error);
+    cards=c;deckData=dd;renderDecks();
+  }catch(e){loaded=false;$('dg').innerHTML=`<div class="msg" style="grid-column:1/-1">Couldn't load war decks. ${esc(e.message)}</div>`;}
+}
+function parseDeck(str){
+  const bySlug={};for(const id in cards)bySlug[norm(cards[id].n)]=+id;
+  let ids,slots=[];
+  const m=str.match(/deck=([\d;]+)/),sl=str.match(/slots=([\d;]+)/);
+  if(m){ids=m[1].split(';').map(Number);if(sl)slots=sl[1].split(';').map(Number);}
+  else ids=str.split('?')[0].split('/').pop().split(',').map(k=>bySlug[norm(k)]).filter(Boolean);
+  const l='https://link.clashroyale.com/deck/en?deck='+ids.join(';')+(slots.length?'&slots='+slots.join(';'):'');
+  return {ids,slots,link:l};
+}
+function renderDecks(){
+  const sets=deckData.sets;if(curSet>=sets.length)curSet=0;
+  $('pills').innerHTML=sets.map((s,i)=>`<button class="pill ${i===curSet?'on':''}" data-i="${i}">${esc(s.name)}</button>`).join('');
+  const set=sets[curSet],decks=set.decks.map(parseDeck);
+  const count={};decks.forEach(d=>d.ids.forEach(id=>count[id]=(count[id]||0)+1));
+  const dupes=Object.keys(count).filter(id=>count[id]>1).map(id=>cards[id]?cards[id].n:id);
+  $('setinfo').innerHTML=esc(set.tag||'')+(dupes.length?`<span class="ok bad">Repeats: ${esc(dupes.join(', '))}</span>`:'<span class="ok">No repeated cards</span>');
+  $('dg').innerHTML=decks.map((d,n)=>{
+    const known=d.ids.filter(id=>cards[id]&&cards[id].e!=null);
+    const avg=known.length?(known.reduce((a,id)=>a+cards[id].e,0)/8).toFixed(1):'';
+    const imgs=d.ids.map((id,i)=>{const c=cards[id];if(!c)return '<span></span>';
+      const src=d.slots[i]===1&&c.ev?c.ev:d.slots[i]===2&&c.h?c.h:c.i;
+      return `<img src="${esc(src)}" alt="${esc(c.n)}" title="${esc(c.n)}" loading="lazy">`;}).join('');
+    return `<div class="deck"><div class="dh">Deck ${'ABCD'[n]||n+1}<span>${avg} elixir</span></div><div class="cg">${imgs}</div><a class="cp" href="${esc(d.link)}" target="_blank" rel="noopener">Copy to game</a></div>`;}).join('');
+  $('dfoot').textContent='Updated: '+(deckData.updated||'')+'. Tap Copy to game to load a deck in Clash Royale. Each set uses 32 different cards, so all four decks work together in war.';
+}
+$('pills').onclick=e=>{const b=e.target.closest('.pill');if(!b)return;curSet=+b.dataset.i;renderDecks();};
+
 fetch('/api/war').then(r=>r.json()).then(d=>{
   if(d.error)throw new Error(d.error);
   data=d;document.title=d.clan.name+' · War Stats';
-  document.getElementById('title').textContent=d.clan.name;
-  document.getElementById('sub').textContent=`${d.players.length} members · last 10 wars · updated ${new Date(d.updated).toLocaleString()}`;
+  $('title').textContent=d.clan.name;
+  $('sub').textContent=`${d.players.length} members · last 10 wars · updated ${new Date(d.updated).toLocaleString()}`;
   const top=[...d.players].filter(p=>p.score10!=null).sort((a,b)=>b.score10-a.score10).slice(0,3);
-  document.getElementById('podium').innerHTML=top.map((p,i)=>`<div class="pod p${i+1}"><div class="m">${['🥇','🥈','🥉'][i]}</div><div class="n">${link(p)}</div><div class="v">${p.score10}</div><small>last 10 wars</small></div>`).join('');
+  $('podium').innerHTML=top.map((p,i)=>`<div class="pod p${i+1}"><div class="m">${['🥇','🥈','🥉'][i]}</div><div class="n">${link(p)}</div><div class="v">${p.score10}</div><small>last 10 wars</small></div>`).join('');
   render();
-}).catch(e=>{document.getElementById('sub').textContent='';document.getElementById('body').innerHTML=`<tr><td class="msg" colspan="17">Couldn't load war data. ${esc(e.message)}</td></tr>`;});
+}).catch(e=>{$('sub').textContent='';$('body').innerHTML=`<tr><td class="msg" colspan="17">Couldn't load war data. ${esc(e.message)}</td></tr>`;});
+if(location.hash==='#decks')show('decks');
 </script>
 </body>
 </html>
