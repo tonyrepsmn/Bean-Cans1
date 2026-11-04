@@ -25,7 +25,7 @@ module.exports = async (req, res) => {
   try {
     const members = await cr(`/clans/${encodeURIComponent(TAG)}/members`);
     const list = members.items.filter(m => !EXCLUDE.includes(m.tag.toUpperCase()));
-    const players = await pool(list, 10, async m => {
+    const players = await pool(list, 25, async m => {
       try {
         const log = await cr(`/players/${encodeURIComponent(m.tag)}/battlelog`);
         const seen = new Map(); let warBattles = 0;
