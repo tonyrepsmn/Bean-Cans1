@@ -1,0 +1,15 @@
+{
+  "updated": "SAMPLE - replace with your sets",
+  "sets": [
+    {
+      "name": "Sample set",
+      "tag": "Replace me with a real Duel Search set",
+      "decks": [
+        "https://link.clashroyale.com/deck/en?deck=26000021;26000014;26000030;26000010;27000000;26000038;28000000;28000011",
+        "https://link.clashroyale.com/deck/en?deck=26000029;26000006;26000005;26000039;27000009;26000056;28000008;28000001",
+        "https://link.clashroyale.com/deck/en?deck=26000009;26000048;26000015;26000035;28000012;26000049;26000042;28000015",
+        "https://link.clashroyale.com/deck/en?deck=26000004;26000036;26000046;26000050;26000062;28000009;26000027;26000031"
+      ]
+    }
+  ]
+}
