@@ -225,4 +225,11 @@ fetch('/api/war').then(r=>r.json()).then(d=>{
   data=d;document.title=d.clan.name+' · War Stats';
   $('title').textContent=d.clan.name;
   $('sub').textContent=`${d.players.length} members · last 10 wars · updated ${new Date(d.updated).toLocaleString()}`;
-  const
+  const top=[...d.players].filter(p=>p.score10!=null).sort((a,b)=>b.score10-a.score10).slice(0,3);
+  $('podium').innerHTML=top.map((p,i)=>`<div class="pod p${i+1}"><div class="m">${['🥇','🥈','🥉'][i]}</div><div class="n">${link(p)}</div><div class="v">${p.score10}</div><small>last 10 wars</small></div>`).join('');
+  render();
+}).catch(e=>{$('sub').textContent='';$('body').innerHTML=`<tr><td class="msg" colspan="17">Couldn't load war data. ${esc(e.message)}</td></tr>`;});
+{const h=location.hash.slice(1);if(h==='members')show(h);}
+</script>
+</body>
+</html>
