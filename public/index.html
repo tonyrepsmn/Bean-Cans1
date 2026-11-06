@@ -80,7 +80,23 @@ details.mem summary::-webkit-details-marker{display:none}
 .cnt{font:700 12px Nunito;padding:3px 10px;border-radius:99px;background:var(--panel2);color:var(--mute);white-space:nowrap}
 .cnt.ok4{background:var(--g);color:#fff}
 details.mem .dg{padding:0 12px 12px}
-@media(max-width:900px){.dg{grid-template-columns:repeat(2,minmax(0,1fr))}}
+#hallView{max-width:1240px;margin:0 auto 40px;padding:0 20px}
+.hg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:start}
+.hc{background:var(--panel);border:2px solid var(--line);border-radius:16px;box-shadow:0 6px 0 rgba(0,0,0,.35);overflow:hidden}
+.hc h2{margin:0;padding:12px 16px;font:400 22px 'Lilita One',sans-serif;background:#222873;color:var(--gold)}
+.hc .note{padding:8px 16px;color:var(--mute);font-size:13px}
+.hr{display:flex;align-items:center;gap:10px;padding:9px 14px;border-top:1px solid var(--line)}
+.hr .rk{width:30px;text-align:center;font:400 17px 'Lilita One',sans-serif;color:var(--mute)}
+.hr .nm{flex:1;min-width:0;font-weight:800}
+.hr .nm a{color:inherit;text-decoration:none;overflow-wrap:anywhere}.hr .nm a:hover{color:var(--gold);text-decoration:underline}
+.hr .fx{font-size:16px;line-height:1.3;letter-spacing:1px}
+.hr .ct{font:400 20px 'Lilita One',sans-serif;color:var(--gold);min-width:36px;text-align:right}
+.hr.cur{background:linear-gradient(90deg,rgba(255,200,61,.25),rgba(255,79,184,.10))}
+.curbox{margin:12px 14px 6px;padding:12px;border-radius:14px;border:2px solid var(--gold);background:linear-gradient(180deg,rgba(255,200,61,.22),rgba(255,79,184,.12));text-align:center}
+.curbox small{display:block;color:var(--mute);font-weight:800;letter-spacing:.04em}
+.curbox b{display:block;font:400 26px/1.2 'Lilita One',sans-serif;color:var(--gold);margin:4px 0}
+@media(prefers-reduced-motion:no-preference){.curbox{animation:glow 2.4s ease-in-out infinite}@keyframes glow{50%{box-shadow:0 0 22px rgba(255,200,61,.55)}}}
+@media(max-width:900px){.hg{grid-template-columns:1fr}.dg{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:760px){
   header{padding-top:16px}
   .crown{width:36px;height:36px}
@@ -98,7 +114,7 @@ details.mem .dg{padding:0 12px 12px}
   th:first-child{z-index:3}
   main,.bar{padding:0 10px}
   input{width:100%}
-  #membersView{padding:0 10px}.dg{gap:8px}.deck{padding:8px}
+  #membersView,#hallView{padding:0 10px}.dg{gap:8px}.deck{padding:8px}
 }
 @media(prefers-reduced-motion:no-preference){.crown{animation:bob 3s ease-in-out infinite}@keyframes bob{50%{transform:translateY(-6px)}}}
 </style>
@@ -122,7 +138,7 @@ details.mem .dg{padding:0 12px 12px}
     <svg class="can c2" aria-hidden="true"><use href="#can"/></svg>
   </div>
   <p class="sub" id="sub">Loading…</p>
-  <div class="tabs"><button class="tab on" data-v="stats">Player stats</button><button class="tab" data-v="members">Member decks</button></div>
+  <div class="tabs"><button class="tab on" data-v="stats">Player stats</button><button class="tab" data-v="hall">Hall of Fame</button><button class="tab" data-v="members">Member decks</button></div>
   <div id="statsHead"><div class="podium" id="podium"></div></div>
 </header>
 <div id="statsBody">
@@ -136,6 +152,7 @@ details.mem .dg{padding:0 12px 12px}
   <footer>War 1 is the most recent war. Scores = average fame per deck × 16, so skipped decks don't count against a player. Tap a name to open their RoyaleAPI profile.</footer>
 </main>
 </div>
+<section id="hallView" hidden><div id="hall"></div></section>
 <section id="membersView" hidden>
   <div class="mbar"><input id="mq" type="search" placeholder="Search member" aria-label="Search member"></div>
   <div id="mlist"></div>
@@ -182,10 +199,10 @@ let cards,cardsP,membersData;
 const ensureCards=()=>cardsP||(cardsP=fetch('/api/cards').then(r=>r.json()).then(c=>{if(c.error)throw new Error(c.error);cards=c;return c;}).catch(e=>{cardsP=null;throw e;}));
 function show(v){
   $('statsHead').hidden=$('statsBody').hidden=v!=='stats';
-  $('membersView').hidden=v!=='members';
+  $('membersView').hidden=v!=='members';$('hallView').hidden=v!=='hall';
   document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
   history.replaceState(null,'','#'+v);
-  if(v==='members')loadMembers();
+  if(v==='members')loadMembers();if(v==='hall')loadHall();
 }
 document.querySelector('.tabs').onclick=e=>{const b=e.target.closest('.tab');if(b)show(b.dataset.v);};
 const deckLink=(ids,slots)=>'https://link.clashroyale.com/deck/en?deck='+ids.join(';')+(slots&&slots.some(Boolean)?'&slots='+slots.join(';'):'');
@@ -220,7 +237,47 @@ $('mlist').addEventListener('toggle',e=>{
   box.innerHTML=p.decks.length?p.decks.map(deckHtml).join(''):'<div class="msg" style="grid-column:1/-1;padding:16px">No war battles in their recent battle log. Their decks show up after they play war.</div>';
 },true);
 
-fetch('/api/war').then(r=>r.json()).then(d=>{
+/* ---------- Hall of Fame ---------- */
+const when=x=>new Date(x.replace(/(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2}).*/,'$1-$2-$3T$4:$5:$6Z'));
+let hallReady=false;
+async function loadHall(){
+  if(hallReady)return;
+  $('hall').innerHTML='<div class="msg">Loading…</div>';
+  try{
+    const [d,cfg]=await Promise.all([warP,fetch('/mvps.json').then(r=>r.json())]);
+    if(d.error)throw new Error(d.error);
+    renderHall(d,cfg);hallReady=true;
+  }catch(e){$('hall').innerHTML=`<div class="msg">Couldn't load the Hall of Fame. ${esc(e.message)}</div>`;}
+}
+function renderHall(d,cfg){
+  const streaks=d.players.map(p=>{let n=0;for(const v of p.wars){if(v!=null&&v>=3000)n++;else break;}return {p,n};})
+    .filter(x=>x.n>0).sort((a,b)=>b.n-a.n||(b.p.score10||0)-(a.p.score10||0));
+  const rows=new Map(),members=new Map(d.players.map(p=>[p.tag,p])),unmatched=[],mv=d.mvps||[];
+  for(const b of cfg.baseline){
+    const m=d.players.find(p=>p.tag.toUpperCase()===b.tag.toUpperCase());
+    if(!m){unmatched.push(b.name);continue;}
+    const r=rows.get(m.tag)||{tag:m.tag,name:b.name,count:0};r.name=b.name;r.count+=b.count;rows.set(m.tag,r);
+  }
+  const asOf=new Date(cfg.asOf+'T00:00:00Z');
+  d.warDates.forEach((x,i)=>{if(when(x)>asOf)(mv[i]||[]).forEach(m=>{
+    if(!members.has(m.tag))return;
+    const r=rows.get(m.tag)||{tag:m.tag,name:members.get(m.tag).name,count:0};r.count++;rows.set(m.tag,r);});});
+  const cur=new Set((mv[0]||[]).map(m=>m.tag));
+  const list=[...rows.values()].sort((a,b)=>b.count-a.count||a.name.localeCompare(b.name));
+  list.forEach(r=>r.rank=1+list.filter(o=>o.count>r.count).length);
+  const medal=r=>['','🥇','🥈','🥉'][r]||r;
+  const nameOf=m=>(rows.get(m.tag)||{}).name||m.name;
+  const banner=(mv[0]||[]).length?`<div class="curbox"><small>🎉 LATEST WAR MVP 🎉</small><b>👑 ${(mv[0]).map(m=>esc(nameOf(m))).join(' & ')} 👑</b><small>🏆 ${fmt(mv[0][0].fame)} war score 🏆</small></div>`:'';
+  const mvpHtml=list.map(r=>{const c=cur.has(r.tag);
+    return `<div class="hr ${c?'cur':''}"><span class="rk">${medal(r.rank)}</span><div class="nm">${c?'👑 ':''}${link(r)}${c?' 🏆✨':''}</div><span class="ct">x${r.count}</span></div>`;}).join('')||'<div class="note">No MVPs yet.</div>';
+  const stHtml=streaks.map((x,i)=>`<div class="hr"><span class="rk">${i+1}</span><div class="nm">${link(x.p)}<div class="fx">${'🔥'.repeat(x.n)}</div></div><span class="ct">${x.n}${x.n>=d.warDates.length?'+':''}</span></div>`).join('')||'<div class="note">Nobody is on a 3K streak right now.</div>';
+  $('hall').innerHTML=`<div class="hg">
+    <div class="hc"><h2>🔥 3K streaks</h2><div class="note">Wars in a row with a 3,000+ war score, counting back from the most recent war. One 🔥 per war.</div>${stHtml}</div>
+    <div class="hc"><h2>🏆 War MVP leaderboard</h2>${banner}<div class="note">The top war score each war is the MVP, and ties share it. Members with no MVPs aren't listed.</div>${mvpHtml}</div></div>`
+    +(location.search.includes('debug')&&unmatched.length?`<footer>Not in the clan right now: ${esc(unmatched.join(', '))}</footer>`:'');
+}
+const warP=fetch('/api/war').then(r=>r.json());
+warP.then(d=>{
   if(d.error)throw new Error(d.error);
   data=d;document.title=d.clan.name+' · War Stats';
   $('title').textContent=d.clan.name;
@@ -229,7 +286,7 @@ fetch('/api/war').then(r=>r.json()).then(d=>{
   $('podium').innerHTML=top.map((p,i)=>`<div class="pod p${i+1}"><div class="m">${['🥇','🥈','🥉'][i]}</div><div class="n">${link(p)}</div><div class="v">${p.score10}</div><small>last 10 wars</small></div>`).join('');
   render();
 }).catch(e=>{$('sub').textContent='';$('body').innerHTML=`<tr><td class="msg" colspan="17">Couldn't load war data. ${esc(e.message)}</td></tr>`;});
-{const h=location.hash.slice(1);if(h==='members')show(h);}
+{const h=location.hash.slice(1);if(h==='members'||h==='hall')show(h)}
 </script>
 </body>
 </html>
