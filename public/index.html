@@ -244,24 +244,35 @@ async function loadHall(){
   if(hallReady)return;
   $('hall').innerHTML='<div class="msg">Loading…</div>';
   try{
-    const [d,cfg]=await Promise.all([warP,fetch('/mvps.json').then(r=>r.json())]);
+    const [d,cfg,mc]=await Promise.all([warP,fetch('/mvps.json').then(r=>r.json()),fetch('/api/mvp').then(r=>r.json()).catch(()=>null)]);
     if(d.error)throw new Error(d.error);
-    renderHall(d,cfg);hallReady=true;
+    renderHall(d,cfg,mc&&mc.counts?mc.counts:null);hallReady=true;
   }catch(e){$('hall').innerHTML=`<div class="msg">Couldn't load the Hall of Fame. ${esc(e.message)}</div>`;}
 }
-function renderHall(d,cfg){
+function renderHall(d,cfg,counts){
   const streaks=d.players.map(p=>{let n=0;for(const v of p.wars){if(v!=null&&v>=3000)n++;else break;}return {p,n};})
     .filter(x=>x.n>0).sort((a,b)=>b.n-a.n||(b.p.score10||0)-(a.p.score10||0));
   const rows=new Map(),members=new Map(d.players.map(p=>[p.tag,p])),unmatched=[],mv=d.mvps||[];
-  for(const b of cfg.baseline){
-    const m=d.players.find(p=>p.tag.toUpperCase()===b.tag.toUpperCase());
-    if(!m){unmatched.push(b.name);continue;}
-    const r=rows.get(m.tag)||{tag:m.tag,name:b.name,count:0};r.name=b.name;r.count+=b.count;rows.set(m.tag,r);
+  const nick={};for(const b of cfg.baseline)nick[b.tag.toUpperCase()]=b.name;
+  if(counts){
+    // Permanent totals from storage: current clan members only, matched by tag.
+    for(const [tag,c] of Object.entries(counts)){
+      const m=members.get(tag.toUpperCase());
+      if(!m){unmatched.push(nick[tag.toUpperCase()]||tag);continue;}
+      rows.set(m.tag,{tag:m.tag,name:nick[m.tag]||m.name,count:Number(c)});
+    }
+  }else{
+    // Fallback if storage isn't connected: your starting totals plus MVPs from the last 10 wars.
+    for(const b of cfg.baseline){
+      const m=members.get(b.tag.toUpperCase());
+      if(!m){unmatched.push(b.name);continue;}
+      rows.set(m.tag,{tag:m.tag,name:b.name,count:b.count});
+    }
+    const asOf=new Date(cfg.asOf+'T00:00:00Z');
+    d.warDates.forEach((x,i)=>{if(when(x)>asOf)(mv[i]||[]).forEach(m=>{
+      if(!members.has(m.tag))return;
+      const r=rows.get(m.tag)||{tag:m.tag,name:members.get(m.tag).name,count:0};r.count++;rows.set(m.tag,r);});});
   }
-  const asOf=new Date(cfg.asOf+'T00:00:00Z');
-  d.warDates.forEach((x,i)=>{if(when(x)>asOf)(mv[i]||[]).forEach(m=>{
-    if(!members.has(m.tag))return;
-    const r=rows.get(m.tag)||{tag:m.tag,name:members.get(m.tag).name,count:0};r.count++;rows.set(m.tag,r);});});
   const cur=new Set((mv[0]||[]).map(m=>m.tag));
   const list=[...rows.values()].sort((a,b)=>b.count-a.count||a.name.localeCompare(b.name));
   list.forEach(r=>r.rank=1+list.filter(o=>o.count>r.count).length);
@@ -274,7 +285,7 @@ function renderHall(d,cfg){
   $('hall').innerHTML=`<div class="hg">
     <div class="hc"><h2>🔥 3K streaks</h2><div class="note">Wars in a row with a 3,000+ war score, counting back from the most recent war. One 🔥 per war.</div>${stHtml}</div>
     <div class="hc"><h2>🏆 War MVP leaderboard</h2>${banner}<div class="note">The top war score each war is the MVP, and ties share it. Members with no MVPs aren't listed.</div>${mvpHtml}</div></div>`
-    +(location.search.includes('debug')&&unmatched.length?`<footer>Not in the clan right now: ${esc(unmatched.join(', '))}</footer>`:'');
+    +(location.search.includes('debug')&&unmatched.length?`<footer>Not matched to a current member: ${esc(unmatched.join(', '))}</footer>`:'');
 }
 const warP=fetch('/api/war').then(r=>r.json());
 warP.then(d=>{
