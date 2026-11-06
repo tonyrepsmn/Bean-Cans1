@@ -23,6 +23,13 @@ module.exports = async (req, res) => {
       cr(`/clans/${enc}`)
     ]);
     const wars = log.items.slice(0, 10); // newest first = War 1
+    // War MVPs: top war score among all participants (ties share it)
+    const mvps = wars.map(w => {
+      const st = w.standings.find(s => s.clan.tag.toUpperCase() === TAG);
+      const ps = (st && st.clan.participants) || [];
+      const max = Math.max(0, ...ps.map(p => p.fame));
+      return max > 0 ? ps.filter(p => p.fame === max).map(p => ({ tag: p.tag, name: p.name, fame: p.fame })) : [];
+    });
     const current = new Map(members.items.map(m => [m.tag.toUpperCase(), m.name]));
     // Only current members appear; anyone who left drops off automatically.
     const players = [...current].filter(([t]) => !EXCLUDE.includes(t)).map(([tag, name]) => {
@@ -49,7 +56,7 @@ module.exports = async (req, res) => {
     res.setHeader('Cache-Control', 's-maxage=900, stale-while-revalidate=3600');
     res.status(200).json({
       clan: { name: clan.name, tag: TAG, members: clan.members },
-      warDates: wars.map(w => w.createdDate), players, updated: new Date().toISOString()
+      warDates: wars.map(w => w.createdDate), mvps, players, updated: new Date().toISOString()
     });
   } catch (e) {
     res.status(500).json({ error: e.message });
