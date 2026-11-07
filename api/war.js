@@ -31,6 +31,7 @@ module.exports = async (req, res) => {
       return max > 0 ? ps.filter(p => p.fame === max).map(p => ({ tag: p.tag, name: p.name, fame: p.fame })) : [];
     });
     const current = new Map(members.items.map(m => [m.tag.toUpperCase(), m.name]));
+    const roles = new Map(members.items.map(m => [m.tag.toUpperCase(), m.role])); // leader, coLeader, elder, member
     // Only current members appear; anyone who left drops off automatically.
     const players = [...current].filter(([t]) => !EXCLUDE.includes(t)).map(([tag, name]) => {
       const scores = []; // ACTUAL fame per war, exactly as RoyaleAPI shows it
@@ -45,7 +46,7 @@ module.exports = async (req, res) => {
       });
       const last5 = scores.slice(0, 5).filter(v => v != null);
       return {
-        name, tag, wars: scores, decks: decks10,
+        name, tag, role: roles.get(tag), wars: scores, decks: decks10,
         avg10: decks10 ? Math.round(fame10 / decks10) : null,                      // avg score per deck
         score10: decks10 ? Math.round((fame10 / decks10) * DECKS_PER_WAR) : null,  // total fame / total decks x 16
         score5: last5.length ? Math.round(last5.reduce((a, b) => a + b, 0) / last5.length) : null // plain avg of last 5 actual war scores
