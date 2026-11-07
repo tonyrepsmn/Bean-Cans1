@@ -24,7 +24,7 @@ header{max-width:1240px;margin:auto;padding:26px 20px 8px;text-align:center}
 h1{font:400 clamp(34px,7vw,64px)/1 'Lilita One',sans-serif;margin:2px 0 4px;color:var(--gold);
 text-shadow:0 4px 0 #a06b00,0 8px 18px rgba(0,0,0,.5);letter-spacing:.01em}
 .sub{color:var(--mute);margin:0 0 14px}
-.tabs{display:flex;justify-content:center;gap:10px;margin:0 0 16px}
+.tabs{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:0 0 16px}
 .tab{font:400 17px 'Lilita One',sans-serif;padding:8px 22px;border-radius:12px;border:2px solid var(--line);background:var(--panel);color:var(--mute);cursor:pointer}
 .tab.on{background:var(--gold);color:#3b2d00;border-color:#a06b00}
 .podium{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;max-width:760px;margin:0 auto 16px;align-items:end}
@@ -96,11 +96,27 @@ details.mem .dg{padding:0 12px 12px}
 .curbox small{display:block;color:var(--mute);font-weight:800;letter-spacing:.04em}
 .curbox b{display:block;font:400 26px/1.2 'Lilita One',sans-serif;color:var(--gold);margin:4px 0}
 @media(prefers-reduced-motion:no-preference){.curbox{animation:glow 2.4s ease-in-out infinite}@keyframes glow{50%{box-shadow:0 0 22px rgba(255,200,61,.55)}}}
+#leadView{max-width:1240px;margin:0 auto 40px;padding:0 20px}
+.org{display:flex;flex-direction:column;align-items:center}
+.tl{font:400 15px 'Lilita One',sans-serif;letter-spacing:.06em;padding:4px 18px;border-radius:99px;background:var(--panel2);border:2px solid var(--line);color:var(--mute)}
+.cards{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin:12px 0;width:100%}
+.lc{width:200px;background:linear-gradient(180deg,var(--panel2),var(--panel));border:2px solid var(--line);border-radius:16px;padding:14px 10px;text-align:center;box-shadow:0 6px 0 rgba(0,0,0,.35)}
+.lc .ic{font-size:26px;line-height:1.1}
+.lc .n{font:400 19px/1.2 'Lilita One',sans-serif;overflow-wrap:anywhere}
+.lc .n a{color:inherit;text-decoration:none}.lc .n a:hover{color:var(--gold)}
+.lc .sc{margin-top:8px;display:inline-block;padding:2px 10px;border-radius:99px;font:800 12px Nunito,sans-serif;color:#fff}
+.sc.g{background:var(--g)}.sc.y{background:var(--y);color:#3b2d00}.sc.r{background:var(--r)}
+.top .lc{width:250px;border-color:var(--gold);box-shadow:0 6px 0 rgba(0,0,0,.35),0 0 24px rgba(255,200,61,.28)}
+.top .tl{color:var(--gold);border-color:var(--gold)}
+.co .lc{border-color:var(--blue)}.co .tl{color:var(--blue);border-color:var(--blue)}
+.vline{width:3px;height:26px;background:var(--line)}
 @media(max-width:900px){.hg{grid-template-columns:1fr}.dg{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:760px){
   header{padding-top:16px}
   .crown{width:36px;height:36px}
   .pod .n{font-size:14px}.pod .v{font-size:20px}.pod .m{font-size:20px}
+  .tab{padding:7px 14px;font-size:15px}
+  .lc{width:calc(50% - 6px)}.top .lc{width:min(250px,100%)}
   .hint{display:block}
   .full{display:none}.short{display:inline}
   .wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
@@ -114,7 +130,7 @@ details.mem .dg{padding:0 12px 12px}
   th:first-child{z-index:3}
   main,.bar{padding:0 10px}
   input{width:100%}
-  #membersView,#hallView{padding:0 10px}.dg{gap:8px}.deck{padding:8px}
+  #membersView,#hallView,#leadView{padding:0 10px}.dg{gap:8px}.deck{padding:8px}
 }
 @media(prefers-reduced-motion:no-preference){.crown{animation:bob 3s ease-in-out infinite}@keyframes bob{50%{transform:translateY(-6px)}}}
 </style>
@@ -138,7 +154,7 @@ details.mem .dg{padding:0 12px 12px}
     <svg class="can c2" aria-hidden="true"><use href="#can"/></svg>
   </div>
   <p class="sub" id="sub">Loading…</p>
-  <div class="tabs"><button class="tab on" data-v="stats">Player stats</button><button class="tab" data-v="hall">Hall of Fame</button><button class="tab" data-v="members">Member decks</button></div>
+  <div class="tabs"><button class="tab on" data-v="stats">Player stats</button><button class="tab" data-v="hall">Hall of Fame</button><button class="tab" data-v="lead">Leadership</button><button class="tab" data-v="members">Member decks</button></div>
   <div id="statsHead"><div class="podium" id="podium"></div></div>
 </header>
 <div id="statsBody">
@@ -153,6 +169,7 @@ details.mem .dg{padding:0 12px 12px}
 </main>
 </div>
 <section id="hallView" hidden><div id="hall"></div></section>
+<section id="leadView" hidden><div id="lead"></div></section>
 <section id="membersView" hidden>
   <div class="mbar"><input id="mq" type="search" placeholder="Search member" aria-label="Search member"></div>
   <div id="mlist"></div>
@@ -199,10 +216,10 @@ let cards,cardsP,membersData;
 const ensureCards=()=>cardsP||(cardsP=fetch('/api/cards').then(r=>r.json()).then(c=>{if(c.error)throw new Error(c.error);cards=c;return c;}).catch(e=>{cardsP=null;throw e;}));
 function show(v){
   $('statsHead').hidden=$('statsBody').hidden=v!=='stats';
-  $('membersView').hidden=v!=='members';$('hallView').hidden=v!=='hall';
+  $('membersView').hidden=v!=='members';$('hallView').hidden=v!=='hall';$('leadView').hidden=v!=='lead';
   document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
   history.replaceState(null,'','#'+v);
-  if(v==='members')loadMembers();if(v==='hall')loadHall();
+  if(v==='members')loadMembers();if(v==='hall')loadHall();if(v==='lead')loadLead();
 }
 document.querySelector('.tabs').onclick=e=>{const b=e.target.closest('.tab');if(b)show(b.dataset.v);};
 const deckLink=(ids,slots)=>'https://link.clashroyale.com/deck/en?deck='+ids.join(';')+(slots&&slots.some(Boolean)?'&slots='+slots.join(';'):'');
@@ -236,6 +253,22 @@ $('mlist').addEventListener('toggle',e=>{
   const p=membersData.players.find(x=>x.tag===d.dataset.t);
   box.innerHTML=p.decks.length?p.decks.map(deckHtml).join(''):'<div class="msg" style="grid-column:1/-1;padding:16px">No war battles in their recent battle log. Their decks show up after they play war.</div>';
 },true);
+
+/* ---------- Leadership ---------- */
+let leadReady=false;
+async function loadLead(){
+  if(leadReady)return;
+  $('lead').innerHTML='<div class="msg">Loading…</div>';
+  try{const d=await warP;if(d.error)throw new Error(d.error);renderLead(d);leadReady=true;}
+  catch(e){$('lead').innerHTML=`<div class="msg">Couldn't load leadership. ${esc(e.message)}</div>`;}
+}
+function renderLead(d){
+  const by=r=>d.players.filter(p=>p.role===r).sort((a,b)=>a.name.localeCompare(b.name));
+  const card=(p,icon)=>`<div class="lc"><div class="ic">${icon}</div><div class="n">${link(p)}</div>${p.score10!=null?`<span class="sc ${cls(p.score10)}">10-war avg ${fmt(p.score10)}</span>`:''}</div>`;
+  const tier=(cls2,label,list,icon)=>list.length?`<div class="tier ${cls2}"><span class="tl">${label}</span><div class="cards">${list.map(p=>card(p,icon)).join('')}</div></div>`:'';
+  const parts=[tier('top','LEADER',by('leader'),'👑'),tier('co','CO-LEADERS',by('coLeader'),'🛡️'),tier('el','ELDERS',by('elder'),'⭐')].filter(Boolean);
+  $('lead').innerHTML=parts.length?`<div class="org">${parts.join('<div class="vline"></div>')}</div>`:'<div class="msg">No leadership data found.</div>';
+}
 
 /* ---------- Hall of Fame ---------- */
 const when=x=>new Date(x.replace(/(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2}).*/,'$1-$2-$3T$4:$5:$6Z'));
@@ -297,7 +330,7 @@ warP.then(d=>{
   $('podium').innerHTML=top.map((p,i)=>`<div class="pod p${i+1}"><div class="m">${['🥇','🥈','🥉'][i]}</div><div class="n">${link(p)}</div><div class="v">${p.score10}</div><small>last 10 wars</small></div>`).join('');
   render();
 }).catch(e=>{$('sub').textContent='';$('body').innerHTML=`<tr><td class="msg" colspan="17">Couldn't load war data. ${esc(e.message)}</td></tr>`;});
-{const h=location.hash.slice(1);if(h==='members'||h==='hall')show(h)}
+{const h=location.hash.slice(1);if(h==='members'||h==='hall'||h==='lead')show(h);}
 </script>
 </body>
 </html>
