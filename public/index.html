@@ -109,6 +109,7 @@ details.mem .dg{padding:0 12px 12px}
 .top .lc{width:250px;border-color:var(--gold);box-shadow:0 6px 0 rgba(0,0,0,.35),0 0 24px rgba(255,200,61,.28)}
 .top .tl{color:var(--gold);border-color:var(--gold)}
 .co .lc{border-color:var(--blue)}.co .tl{color:var(--blue);border-color:var(--blue)}
+.mb .lc{width:160px;padding:10px 8px}.mb .lc .ic{font-size:20px}.mb .lc .n{font-size:16px}
 .vline{width:3px;height:26px;background:var(--line)}
 @media(max-width:900px){.hg{grid-template-columns:1fr}.dg{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:760px){
@@ -116,7 +117,7 @@ details.mem .dg{padding:0 12px 12px}
   .crown{width:36px;height:36px}
   .pod .n{font-size:14px}.pod .v{font-size:20px}.pod .m{font-size:20px}
   .tab{padding:7px 14px;font-size:15px}
-  .lc{width:calc(50% - 6px)}.top .lc{width:min(250px,100%)}
+  .lc,.mb .lc{width:calc(50% - 6px)}.top .lc{width:min(250px,100%)}
   .hint{display:block}
   .full{display:none}.short{display:inline}
   .wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
@@ -266,7 +267,7 @@ function renderLead(d){
   const by=r=>d.players.filter(p=>p.role===r).sort((a,b)=>a.name.localeCompare(b.name));
   const card=(p,icon)=>`<div class="lc"><div class="ic">${icon}</div><div class="n">${link(p)}</div>${p.score10!=null?`<span class="sc ${cls(p.score10)}">10-war avg ${fmt(p.score10)}</span>`:''}</div>`;
   const tier=(cls2,label,list,icon)=>list.length?`<div class="tier ${cls2}"><span class="tl">${label}</span><div class="cards">${list.map(p=>card(p,icon)).join('')}</div></div>`:'';
-  const parts=[tier('top','LEADER',by('leader'),'👑'),tier('co','CO-LEADERS',by('coLeader'),'🛡️'),tier('el','ELDERS',by('elder'),'⭐')].filter(Boolean);
+  const parts=[tier('top','LEADER',by('leader'),'👑'),tier('co','CO-LEADERS',by('coLeader'),'🛡️'),tier('el','ELDERS',by('elder'),'⭐'),tier('mb','MEMBERS',by('member'),'🫘')].filter(Boolean);
   $('lead').innerHTML=parts.length?`<div class="org">${parts.join('<div class="vline"></div>')}</div>`:'<div class="msg">No leadership data found.</div>';
 }
 
