@@ -1,1 +1,8 @@
-{ "outputDirectory": "public" }
+{
+  "outputDirectory": "public",
+  "functions": {
+    "api/memberdecks.js": { "maxDuration": 30 },
+    "api/posts.js": { "maxDuration": 30 }
+  },
+  "crons": [{ "path": "/api/posts", "schedule": "0 15 * * *" }]
+}
