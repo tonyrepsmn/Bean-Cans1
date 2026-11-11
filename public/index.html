@@ -111,6 +111,24 @@ details.mem .dg{padding:0 12px 12px}
 .co .lc{border-color:var(--blue)}.co .tl{color:var(--blue);border-color:var(--blue)}
 .mb .lc{width:160px;padding:10px 8px}.mb .lc .ic{font-size:20px}.mb .lc .n{font-size:16px}
 .vline{width:3px;height:26px;background:var(--line)}
+#postView{max-width:1240px;margin:0 auto 40px;padding:0 20px}
+.ptop{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:12px}
+.pbtns{display:flex;gap:8px;flex-wrap:wrap}
+select{font:inherit;padding:9px 14px;border:2px solid var(--line);border-radius:12px;background:var(--panel);color:var(--ink);max-width:100%}
+select:focus-visible,textarea:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.btn{font:400 15px 'Lilita One',sans-serif;padding:8px 16px;border-radius:10px;border:0;background:var(--gold);color:#3b2d00;cursor:pointer;box-shadow:0 3px 0 #a06b00}
+.btn.alt{background:var(--panel2);color:var(--ink);box-shadow:0 3px 0 #000;border:2px solid var(--line)}
+.sumcard{background:var(--panel);border:2px solid var(--gold);border-radius:16px;padding:16px;margin-bottom:14px;text-align:center;box-shadow:0 6px 0 rgba(0,0,0,.35)}
+.sumcard h2{margin:0 0 4px;font:400 clamp(24px,4vw,34px)/1.15 'Lilita One',sans-serif;color:var(--gold)}
+.sumcard .big{font:400 clamp(20px,3vw,26px) 'Lilita One',sans-serif}
+.stats{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:10px}
+.stat{padding:4px 12px;border-radius:99px;background:var(--panel2);border:2px solid var(--line);font-size:13px;color:var(--mute)}
+.pnote{margin-top:12px;padding:12px;border-radius:12px;background:rgba(255,200,61,.10);border:2px solid var(--line);text-align:left;white-space:pre-wrap}
+.pform{margin-top:10px;text-align:left;display:grid;gap:8px}
+textarea{font:inherit;padding:10px 12px;border:2px solid var(--line);border-radius:12px;background:var(--panel);color:var(--ink);min-height:110px;width:100%}
+.hr .sm{font:600 12px Nunito,sans-serif;color:var(--mute)}
+.mv{font:800 12px Nunito,sans-serif;min-width:44px;text-align:right}
+.mv.up{color:#7be08f}.mv.dn{color:#ff8d88}
 @media(max-width:900px){.hg{grid-template-columns:1fr}.dg{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:760px){
   header{padding-top:16px}
@@ -131,7 +149,7 @@ details.mem .dg{padding:0 12px 12px}
   th:first-child{z-index:3}
   main,.bar{padding:0 10px}
   input{width:100%}
-  #membersView,#hallView,#leadView{padding:0 10px}.dg{gap:8px}.deck{padding:8px}
+  #membersView,#hallView,#leadView,#postView{padding:0 10px}.dg{gap:8px}.deck{padding:8px}
 }
 @media(prefers-reduced-motion:no-preference){.crown{animation:bob 3s ease-in-out infinite}@keyframes bob{50%{transform:translateY(-6px)}}}
 </style>
@@ -155,7 +173,7 @@ details.mem .dg{padding:0 12px 12px}
     <svg class="can c2" aria-hidden="true"><use href="#can"/></svg>
   </div>
   <p class="sub" id="sub">Loading…</p>
-  <div class="tabs"><button class="tab on" data-v="stats">Player stats</button><button class="tab" data-v="hall">Hall of Fame</button><button class="tab" data-v="lead">Leadership</button><button class="tab" data-v="members">Member decks</button></div>
+  <div class="tabs"><button class="tab on" data-v="stats">Player stats</button><button class="tab" data-v="post">Post-War</button><button class="tab" data-v="hall">Hall of Fame</button><button class="tab" data-v="lead">Leadership</button><button class="tab" data-v="members">Member decks</button></div>
   <div id="statsHead"><div class="podium" id="podium"></div></div>
 </header>
 <div id="statsBody">
@@ -169,6 +187,7 @@ details.mem .dg{padding:0 12px 12px}
   <footer>War 1 is the most recent war. Scores = average fame per deck × 16, so skipped decks don't count against a player. Tap a name to open their RoyaleAPI profile.</footer>
 </main>
 </div>
+<section id="postView" hidden><div id="post"></div></section>
 <section id="hallView" hidden><div id="hall"></div></section>
 <section id="leadView" hidden><div id="lead"></div></section>
 <section id="membersView" hidden>
@@ -217,10 +236,10 @@ let cards,cardsP,membersData;
 const ensureCards=()=>cardsP||(cardsP=fetch('/api/cards').then(r=>r.json()).then(c=>{if(c.error)throw new Error(c.error);cards=c;return c;}).catch(e=>{cardsP=null;throw e;}));
 function show(v){
   $('statsHead').hidden=$('statsBody').hidden=v!=='stats';
-  $('membersView').hidden=v!=='members';$('hallView').hidden=v!=='hall';$('leadView').hidden=v!=='lead';
+  $('membersView').hidden=v!=='members';$('hallView').hidden=v!=='hall';$('leadView').hidden=v!=='lead';$('postView').hidden=v!=='post';
   document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
   history.replaceState(null,'','#'+v);
-  if(v==='members')loadMembers();if(v==='hall')loadHall();if(v==='lead')loadLead();
+  if(v==='members')loadMembers();if(v==='hall')loadHall();if(v==='lead')loadLead();if(v==='post')loadPost();
 }
 document.querySelector('.tabs').onclick=e=>{const b=e.target.closest('.tab');if(b)show(b.dataset.v);};
 const deckLink=(ids,slots)=>'https://link.clashroyale.com/deck/en?deck='+ids.join(';')+(slots&&slots.some(Boolean)?'&slots='+slots.join(';'):'');
@@ -254,6 +273,72 @@ $('mlist').addEventListener('toggle',e=>{
   const p=membersData.players.find(x=>x.tag===d.dataset.t);
   box.innerHTML=p.decks.length?p.decks.map(deckHtml).join(''):'<div class="msg" style="grid-column:1/-1;padding:16px">No war battles in their recent battle log. Their decks show up after they play war.</div>';
 },true);
+
+/* ---------- Post-War report ---------- */
+let posts=[],curPost=0,postReady=false,editing=false;
+const ord=n=>{const s=['th','st','nd','rd'],v=n%100;return n+(s[(v-20)%10]||s[v]||s[0]);};
+async function loadPost(){
+  if(postReady)return;
+  $('post').innerHTML='<div class="msg">Loading the weekly report…</div>';
+  try{
+    const r=await fetch('/api/posts').then(r=>r.json());
+    if(r.error)throw new Error(r.error);
+    posts=r.posts;postReady=true;renderPost();
+  }catch(e){$('post').innerHTML=`<div class="msg">Couldn't load the post-war report. ${esc(e.message)}</div>`;}
+}
+function discordText(p){
+  const L=[`Summary: War week ${p.label}: ${p.standing?ord(p.standing.rank)+' place finish.':''}${p.note?' '+p.note:''}`,'','Top 10 Clan war members Based on Average Score Per Deck'];
+  p.top10.forEach(m=>L.push(`@${m.name} ${m.avg} per deck${m.mvp?' 👑 MVP':''}${m.streak>1?` 🔥 ${m.streak} wars of 3K in a row`:''}`));
+  L.push('','3K performers this war');
+  if(p.threeK.length)p.threeK.forEach(m=>L.push(`@${m.name} ${m.score} x${m.streak}`));else L.push('Nobody hit 3K this war.');
+  L.push('','War MVP Leaderboard ( for current war MVP(s))');
+  p.mvpBoard.forEach(m=>L.push(`@${m.name} x${m.count}${p.mvps.some(v=>v.tag===m.tag)?' 👑':''}`));
+  return L.join('\n');
+}
+function renderPost(){
+  const p=posts[curPost];
+  if(!p){$('post').innerHTML='<div class="msg">No reports yet. The first one appears after the next war finishes.</div>';return;}
+  const medal=r=>['','🥇','🥈','🥉'][r]||r;
+  const mvTag=m=>m.move==null?'':m.move==='new'?'<span class="mv up">NEW</span>':m.move>0?`<span class="mv up">▲${m.move}</span>`:m.move<0?`<span class="mv dn">▼${-m.move}</span>`:'<span class="mv"></span>';
+  const mvNames=p.mvps.map(m=>esc(m.name)).join(' & ');
+  const sc=p.standing;
+  const top=p.top10.map(m=>`<div class="hr"><span class="rk">${medal(m.rank)}</span><div class="nm">${link(m)}${m.mvp?' 👑':''}<div class="sm">${m.avg} per deck${m.last!=null?` · ${fmt(m.last)} this war`:''}${m.streak>1?` · 🔥 ${m.streak} in a row`:''}</div></div>${mvTag(m)}</div>`).join('')||'<div class="note">Not enough data yet.</div>';
+  const k=p.threeK.map(m=>`<div class="hr"><div class="nm">${link(m)}</div><span class="note" style="padding:0">${fmt(m.score)}</span><span class="ct">🔥 x${m.streak}</span></div>`).join('')||'<div class="note">Nobody hit 3K this war.</div>';
+  const mv=p.mvpBoard.map(m=>{const c=p.mvps.some(v=>v.tag===m.tag);return `<div class="hr ${c?'cur':''}"><span class="rk">${medal(m.rank)}</span><div class="nm">${c?'👑 ':''}${link(m)}${c?' 🏆✨':''}</div><span class="ct">x${m.count}</span></div>`;}).join('')||'<div class="note">No MVPs yet.</div>';
+  $('post').innerHTML=`
+    <div class="ptop"><select id="psel" aria-label="Choose a war week">${posts.map((x,i)=>`<option value="${i}" ${i===curPost?'selected':''}>War week ${x.label} · ${x.date.slice(0,4)}</option>`).join('')}</select>
+      <div class="pbtns"><button class="btn" data-act="copy">Copy for Discord</button><button class="btn alt" data-act="edit">${editing?'Close':'Leader note'}</button></div></div>
+    <div class="sumcard"><h2>War week ${p.label}</h2>
+      <div class="big">${sc?`${ord(sc.rank)} place finish${sc.rank===1?' 🏆':''}`:'War complete'}</div>
+      <div class="stats">${sc?`<span class="stat">${fmt(sc.fame)} fame</span>`:''}${sc&&sc.trophyChange!=null?`<span class="stat">${sc.trophyChange>0?'+':''}${sc.trophyChange} trophies</span>`:''}<span class="stat">${p.threeK.length} players hit 3K</span>${mvNames?`<span class="stat">👑 MVP: ${mvNames}</span>`:''}</div>
+      ${p.note?`<div class="pnote">${esc(p.note)}</div>`:''}
+      ${editing?`<div class="pform"><textarea id="pnote" placeholder="Write this week's message to the clan…">${esc(p.note||'')}</textarea><input id="pkey" type="password" placeholder="Leader password" value="${esc((()=>{try{return localStorage.getItem('leaderKey')||''}catch(e){return ''}})())}"><div class="pbtns"><button class="btn" data-act="save">Save note</button></div><div class="note" id="pmsg" style="padding:0"></div></div>`:''}
+    </div>
+    <div class="hg">
+      <div class="hc"><h2>🏅 Top 10 by average score per deck</h2>${top}</div>
+      <div><div class="hc" style="margin-bottom:14px"><h2>🔥 3K performers this war</h2>${k}</div>
+      <div class="hc"><h2>🏆 War MVP leaderboard</h2><div class="note">Totals as of this war.</div>${mv}</div></div>
+    </div>`;
+}
+$('post').addEventListener('change',e=>{if(e.target.id==='psel'){curPost=+e.target.value;editing=false;renderPost();}});
+$('post').addEventListener('click',async e=>{
+  const b=e.target.closest('[data-act]');if(!b)return;const p=posts[curPost],a=b.dataset.act;
+  if(a==='edit'){editing=!editing;renderPost();}
+  if(a==='copy'){
+    const t=discordText(p);
+    try{await navigator.clipboard.writeText(t);b.textContent='Copied!';setTimeout(()=>{b.textContent='Copy for Discord'},1500);}
+    catch(err){prompt('Copy this message:',t);}
+  }
+  if(a==='save'){
+    const note=$('pnote').value,key=$('pkey').value,msg=$('pmsg');msg.textContent='Saving…';
+    try{
+      const r=await fetch('/api/posts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:p.id,note,key})});
+      const j=await r.json();if(!r.ok)throw new Error(j.error||'Could not save');
+      try{localStorage.setItem('leaderKey',key);}catch(err){}
+      p.note=note.slice(0,4000);editing=false;renderPost();
+    }catch(err){msg.textContent=err.message;}
+  }
+});
 
 /* ---------- Leadership ---------- */
 let leadReady=false;
@@ -331,7 +416,7 @@ warP.then(d=>{
   $('podium').innerHTML=top.map((p,i)=>`<div class="pod p${i+1}"><div class="m">${['🥇','🥈','🥉'][i]}</div><div class="n">${link(p)}</div><div class="v">${p.score10}</div><small>last 10 wars</small></div>`).join('');
   render();
 }).catch(e=>{$('sub').textContent='';$('body').innerHTML=`<tr><td class="msg" colspan="17">Couldn't load war data. ${esc(e.message)}</td></tr>`;});
-{const h=location.hash.slice(1);if(h==='members'||h==='hall'||h==='lead')show(h);}
+{const h=location.hash.slice(1);if(h==='members'||h==='hall'||h==='lead'||h==='post')show(h);}
 </script>
 </body>
 </html>
