@@ -286,9 +286,23 @@ async function loadPost(){
     posts=r.posts;postReady=true;renderPost();
   }catch(e){$('post').innerHTML=`<div class="msg">Couldn't load the post-war report. ${esc(e.message)}</div>`;}
 }
+function shoutouts(p){
+  const g=new Map();
+  const add=(tag,name,icon,text)=>{const o=g.get(tag)||{tag,name,icons:'',texts:[]};o.icons+=icon;o.texts.push(text);g.set(tag,o);};
+  p.mvps.forEach(m=>add(m.tag,m.name,'👑',`war MVP with ${fmt(m.fame)}`));
+  p.threeK.filter(m=>m.streak>=3).sort((a,b)=>b.streak-a.streak||b.score-a.score).slice(0,6).forEach(m=>add(m.tag,m.name,'🔥',`${m.streak} wars in a row at 3K`));
+  p.top10.forEach(m=>{
+    if(m.move==='new')add(m.tag,m.name,'🆕',`new in the top 10 at #${m.rank}`);
+    else if(typeof m.move==='number'&&m.move>=2)add(m.tag,m.name,'📈',`climbed ${m.move} spots to #${m.rank}`);
+  });
+  return [...g.values()];
+}
 function discordText(p){
-  const L=[`Summary: War week ${p.label}: ${p.standing?ord(p.standing.rank)+' place finish.':''}${p.note?' '+p.note:''}`,'','Top 10 Clan war members Based on Average Score Per Deck'];
-  p.top10.forEach(m=>L.push(`@${m.name} ${m.avg} per deck${m.mvp?' 👑 MVP':''}${m.streak>1?` 🔥 ${m.streak} wars of 3K in a row`:''}`));
+  const so=shoutouts(p);
+  const L=[`Summary: War week ${p.label}: ${p.standing?ord(p.standing.rank)+' place finish.':''}${p.note?' '+p.note:''}`,''];
+  if(so.length){L.push('Shout-outs to the players killing it');so.forEach(o=>L.push(`@${o.name} ${o.icons} ${o.texts.join(' · ')}`));L.push('');}
+  L.push('Top 10 Clan war members Based on Average Score Per Deck');
+  p.top10.forEach(m=>L.push(`@${m.name} ${m.avg} per deck${m.mvp?' 👑':''}`));
   L.push('','3K performers this war');
   if(p.threeK.length)p.threeK.forEach(m=>L.push(`@${m.name} ${m.score} x${m.streak}`));else L.push('Nobody hit 3K this war.');
   L.push('','War MVP Leaderboard ( for current war MVP(s))');
@@ -305,6 +319,8 @@ function renderPost(){
   const top=p.top10.map(m=>`<div class="hr"><span class="rk">${medal(m.rank)}</span><div class="nm">${link(m)}${m.mvp?' 👑':''}<div class="sm">${m.avg} per deck${m.last!=null?` · ${fmt(m.last)} this war`:''}${m.streak>1?` · 🔥 ${m.streak} in a row`:''}</div></div>${mvTag(m)}</div>`).join('')||'<div class="note">Not enough data yet.</div>';
   const k=p.threeK.map(m=>`<div class="hr"><div class="nm">${link(m)}</div><span class="note" style="padding:0">${fmt(m.score)}</span><span class="ct">🔥 x${m.streak}</span></div>`).join('')||'<div class="note">Nobody hit 3K this war.</div>';
   const mv=p.mvpBoard.map(m=>{const c=p.mvps.some(v=>v.tag===m.tag);return `<div class="hr ${c?'cur':''}"><span class="rk">${medal(m.rank)}</span><div class="nm">${c?'👑 ':''}${link(m)}${c?' 🏆✨':''}</div><span class="ct">x${m.count}</span></div>`;}).join('')||'<div class="note">No MVPs yet.</div>';
+  const so=shoutouts(p);
+  const soHtml=so.length?`<div class="hc" style="margin-bottom:14px"><h2>⭐ Shout-outs</h2>${so.map(o=>`<div class="hr"><div class="nm">${o.icons} ${link(o)}<div class="sm">${o.texts.join(' · ')}</div></div></div>`).join('')}</div>`:'';
   $('post').innerHTML=`
     <div class="ptop"><select id="psel" aria-label="Choose a war week">${posts.map((x,i)=>`<option value="${i}" ${i===curPost?'selected':''}>War week ${x.label} · ${x.date.slice(0,4)}</option>`).join('')}</select>
       <div class="pbtns"><button class="btn" data-act="copy">Copy for Discord</button><button class="btn alt" data-act="edit">${editing?'Close':'Leader note'}</button></div></div>
@@ -314,6 +330,7 @@ function renderPost(){
       ${p.note?`<div class="pnote">${esc(p.note)}</div>`:''}
       ${editing?`<div class="pform"><textarea id="pnote" placeholder="Write this week's message to the clan…">${esc(p.note||'')}</textarea><input id="pkey" type="password" placeholder="Leader password" value="${esc((()=>{try{return localStorage.getItem('leaderKey')||''}catch(e){return ''}})())}"><div class="pbtns"><button class="btn" data-act="save">Save note</button></div><div class="note" id="pmsg" style="padding:0"></div></div>`:''}
     </div>
+    ${soHtml}
     <div class="hg">
       <div class="hc"><h2>🏅 Top 10 by average score per deck</h2>${top}</div>
       <div><div class="hc" style="margin-bottom:14px"><h2>🔥 3K performers this war</h2>${k}</div>
