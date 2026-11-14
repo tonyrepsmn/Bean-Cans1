@@ -115,17 +115,14 @@ details.mem .dg{padding:0 12px 12px}
 .ptop{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:12px}
 .pbtns{display:flex;gap:8px;flex-wrap:wrap}
 select{font:inherit;padding:9px 14px;border:2px solid var(--line);border-radius:12px;background:var(--panel);color:var(--ink);max-width:100%}
-select:focus-visible,textarea:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+select:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 .btn{font:400 15px 'Lilita One',sans-serif;padding:8px 16px;border-radius:10px;border:0;background:var(--gold);color:#3b2d00;cursor:pointer;box-shadow:0 3px 0 #a06b00}
-.btn.alt{background:var(--panel2);color:var(--ink);box-shadow:0 3px 0 #000;border:2px solid var(--line)}
 .sumcard{background:var(--panel);border:2px solid var(--gold);border-radius:16px;padding:16px;margin-bottom:14px;text-align:center;box-shadow:0 6px 0 rgba(0,0,0,.35)}
 .sumcard h2{margin:0 0 4px;font:400 clamp(24px,4vw,34px)/1.15 'Lilita One',sans-serif;color:var(--gold)}
 .sumcard .big{font:400 clamp(20px,3vw,26px) 'Lilita One',sans-serif}
 .stats{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:10px}
 .stat{padding:4px 12px;border-radius:99px;background:var(--panel2);border:2px solid var(--line);font-size:13px;color:var(--mute)}
 .pnote{margin-top:12px;padding:12px;border-radius:12px;background:rgba(255,200,61,.10);border:2px solid var(--line);text-align:left;white-space:pre-wrap}
-.pform{margin-top:10px;text-align:left;display:grid;gap:8px}
-textarea{font:inherit;padding:10px 12px;border:2px solid var(--line);border-radius:12px;background:var(--panel);color:var(--ink);min-height:110px;width:100%}
 .hr .sm{font:600 12px Nunito,sans-serif;color:var(--mute)}
 .mv{font:800 12px Nunito,sans-serif;min-width:44px;text-align:right}
 .mv.up{color:#7be08f}.mv.dn{color:#ff8d88}
@@ -275,7 +272,7 @@ $('mlist').addEventListener('toggle',e=>{
 },true);
 
 /* ---------- Post-War report ---------- */
-let posts=[],curPost=0,postReady=false,editing=false;
+let posts=[],curPost=0,postReady=false;
 const ord=n=>{const s=['th','st','nd','rd'],v=n%100;return n+(s[(v-20)%10]||s[v]||s[0]);};
 async function loadPost(){
   if(postReady)return;
@@ -323,12 +320,12 @@ function renderPost(){
   const soHtml=so.length?`<div class="hc" style="margin-bottom:14px"><h2>⭐ Shout-outs</h2>${so.map(o=>`<div class="hr"><div class="nm">${o.icons} ${link(o)}<div class="sm">${o.texts.join(' · ')}</div></div></div>`).join('')}</div>`:'';
   $('post').innerHTML=`
     <div class="ptop"><select id="psel" aria-label="Choose a war week">${posts.map((x,i)=>`<option value="${i}" ${i===curPost?'selected':''}>War week ${x.label} · ${x.date.slice(0,4)}</option>`).join('')}</select>
-      <div class="pbtns"><button class="btn" data-act="copy">Copy for Discord</button><button class="btn alt" data-act="edit">${editing?'Close':'Leader note'}</button></div></div>
+      <div class="pbtns"><button class="btn" data-act="copy">Copy for Discord</button></div></div>
     <div class="sumcard"><h2>War week ${p.label}</h2>
       <div class="big">${sc?`${ord(sc.rank)} place finish${sc.rank===1?' 🏆':''}`:'War complete'}</div>
       <div class="stats">${sc?`<span class="stat">${fmt(sc.fame)} fame</span>`:''}${sc&&sc.trophyChange!=null?`<span class="stat">${sc.trophyChange>0?'+':''}${sc.trophyChange} trophies</span>`:''}<span class="stat">${p.threeK.length} players hit 3K</span>${mvNames?`<span class="stat">👑 MVP: ${mvNames}</span>`:''}</div>
       ${p.note?`<div class="pnote">${esc(p.note)}</div>`:''}
-      ${editing?`<div class="pform"><textarea id="pnote" placeholder="Write this week's message to the clan…">${esc(p.note||'')}</textarea><input id="pkey" type="password" placeholder="Leader password" value="${esc((()=>{try{return localStorage.getItem('leaderKey')||''}catch(e){return ''}})())}"><div class="pbtns"><button class="btn" data-act="save">Save note</button></div><div class="note" id="pmsg" style="padding:0"></div></div>`:''}
+
     </div>
     ${soHtml}
     <div class="hg">
@@ -337,23 +334,13 @@ function renderPost(){
       <div class="hc"><h2>🏆 War MVP leaderboard</h2><div class="note">Totals as of this war.</div>${mv}</div></div>
     </div>`;
 }
-$('post').addEventListener('change',e=>{if(e.target.id==='psel'){curPost=+e.target.value;editing=false;renderPost();}});
+$('post').addEventListener('change',e=>{if(e.target.id==='psel'){curPost=+e.target.value;renderPost();}});
 $('post').addEventListener('click',async e=>{
   const b=e.target.closest('[data-act]');if(!b)return;const p=posts[curPost],a=b.dataset.act;
-  if(a==='edit'){editing=!editing;renderPost();}
   if(a==='copy'){
     const t=discordText(p);
     try{await navigator.clipboard.writeText(t);b.textContent='Copied!';setTimeout(()=>{b.textContent='Copy for Discord'},1500);}
     catch(err){prompt('Copy this message:',t);}
-  }
-  if(a==='save'){
-    const note=$('pnote').value,key=$('pkey').value,msg=$('pmsg');msg.textContent='Saving…';
-    try{
-      const r=await fetch('/api/posts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:p.id,note,key})});
-      const j=await r.json();if(!r.ok)throw new Error(j.error||'Could not save');
-      try{localStorage.setItem('leaderKey',key);}catch(err){}
-      p.note=note.slice(0,4000);editing=false;renderPost();
-    }catch(err){msg.textContent=err.message;}
   }
 });
 
